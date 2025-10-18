@@ -60,7 +60,7 @@ app.post('/api/auth/signup', async (req, res) => {
       password, // In production, hash this password
       jobTitle,
       experience,
-      newsletter,
+      newsletter: newsletter === 'on' || newsletter === true, // Convert to boolean
       createdAt: new Date()
     });
     
