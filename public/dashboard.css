@@ -313,6 +313,72 @@
     margin-bottom: 10px;
 }
 
+.login-prompt {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.prompt-card {
+    background: white;
+    border-radius: 20px;
+    padding: 50px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    max-width: 500px;
+}
+
+.prompt-card h2 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 2rem;
+}
+
+.prompt-card p {
+    color: #6c757d;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.prompt-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.prompt-btn {
+    padding: 15px 30px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.prompt-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.prompt-btn.secondary {
+    background: #f8f9fa;
+    color: #495057;
+    border: 2px solid #e9ecef;
+}
+
+.prompt-btn.tertiary {
+    background: none;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.prompt-btn:hover {
+    transform: translateY(-2px);
+}
+
 @media (max-width: 768px) {
     .dashboard-header {
         flex-direction: column;

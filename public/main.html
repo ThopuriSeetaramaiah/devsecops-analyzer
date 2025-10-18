@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevSecOps Skill Gap Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ DevSecOps Skill Gap Analyzer</h1>
+            <p>Identify your skill gaps and get a personalized learning path to become DevSecOps ready</p>
+            <div class="header-actions">
+                <a href="signup.html" class="header-btn primary">🚀 Get Started</a>
+                <a href="login.html" class="header-btn secondary">Sign In</a>
+                <a href="dashboard.html" class="header-btn secondary">Dashboard</a>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" onclick="showTab('assessment-tab')">📝 Skill Assessment</button>
+                <button class="nav-btn" onclick="showTab('certifications-tab')">📜 Certification Practice</button>
+            </nav>
+        </div>
+
+        <!-- Assessment Tab -->
+        <div id="assessment-tab" class="tab-content active">
+        <!-- User Information Section -->
+        <div id="userForm" class="section">
+            <h2>👤 Get Started</h2>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" class="form-input" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" class="form-input" placeholder="Enter your email address" required>
+            </div>
+            <button id="startBtn" class="btn">🚀 Start Assessment</button>
+        </div>
+
+        <!-- Assessment Section -->
+        <div id="assessment" class="section" style="display: none;">
+            <h2>📝 DevSecOps Assessment</h2>
+            <p>Answer all questions to get your personalized learning path. Take your time and choose the best answer.</p>
+            <div id="questionsContainer"></div>
+            <button id="submitBtn" class="btn">✅ Submit Assessment</button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="section" style="display: none;">
+            <h2>📊 Your Results</h2>
+            <div id="resultsContainer"></div>
+            <button id="retakeBtn" class="btn">🔄 Retake Assessment</button>
+        </div>
+        </div>
+
+        <!-- Certifications Tab -->
+        <div id="certifications-tab" class="tab-content" style="display: none;">
+            <div class="section">
+                <h2>📜 AWS & Security Certification Practice</h2>
+                <p>Practice with real certification questions and get detailed explanations</p>
+                <div id="certificationsList"></div>
+            </div>
+
+            <div id="certificationTest" class="section" style="display: none;">
+                <div id="certTestHeader"></div>
+                <div id="certQuestionsContainer"></div>
+                <button id="submitCertBtn" class="btn">✅ Submit Test</button>
+                <button id="backToCertsBtn" class="btn btn-secondary">← Back to Certifications</button>
+            </div>
+
+            <div id="certResults" class="section" style="display: none;">
+                <h2>📊 Certification Test Results</h2>
+                <div id="certResultsContainer"></div>
+                <button id="retakeCertBtn" class="btn">🔄 Retake Test</button>
+                <button id="backToCertsBtn2" class="btn btn-secondary">← Back to Certifications</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

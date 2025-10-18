@@ -25,10 +25,17 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://mongo:27017/devsecops');
 // User Schema
 const userSchema = new mongoose.Schema({
   name: String,
-  email: String,
+  firstName: String,
+  lastName: String,
+  email: { type: String, unique: true },
+  password: String,
+  jobTitle: String,
+  experience: String,
+  newsletter: Boolean,
   assessmentResults: Object,
   learningPath: Array,
-  progress: Object
+  progress: Object,
+  createdAt: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', userSchema);

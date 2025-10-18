@@ -107,7 +107,7 @@ class AuthManager {
 
     continueAsGuest() {
         localStorage.setItem('guestMode', 'true');
-        window.location.href = 'index.html';
+        window.location.href = 'dashboard.html';
     }
 
     checkAuthState() {

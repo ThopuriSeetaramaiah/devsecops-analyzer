@@ -16,7 +16,8 @@ class Dashboard {
         const guestMode = localStorage.getItem('guestMode');
         
         if (!user && !guestMode) {
-            window.location.href = 'login.html';
+            // Show login options instead of redirecting
+            this.showLoginPrompt();
             return;
         }
         
@@ -26,6 +27,22 @@ class Dashboard {
         } else {
             document.getElementById('userName').textContent = 'Guest';
         }
+    }
+
+    showLoginPrompt() {
+        document.querySelector('.dashboard-main').innerHTML = `
+            <div class="login-prompt">
+                <div class="prompt-card">
+                    <h2>🛡️ Welcome to DevSecOps Analyzer</h2>
+                    <p>Sign in to access your personalized dashboard and track your progress</p>
+                    <div class="prompt-actions">
+                        <a href="signup.html" class="prompt-btn primary">🚀 Create Account</a>
+                        <a href="login.html" class="prompt-btn secondary">Sign In</a>
+                        <button onclick="continueAsGuest()" class="prompt-btn tertiary">Continue as Guest</button>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     loadUserData() {
@@ -194,18 +211,23 @@ function toggleUserMenu() {
 }
 
 function startNewAssessment() {
-    window.location.href = 'index.html#assessment';
+    window.location.href = 'main.html#assessment';
 }
 
 function browseCertifications() {
-    window.location.href = 'index.html#certifications';
+    window.location.href = 'main.html#certifications';
+}
+
+function continueAsGuest() {
+    localStorage.setItem('guestMode', 'true');
+    location.reload();
 }
 
 function viewLearningPath() {
     // Show learning path based on last assessment
     const lastAssessment = JSON.parse(localStorage.getItem('lastAssessmentResults') || 'null');
     if (lastAssessment) {
-        window.location.href = 'index.html#results';
+        window.location.href = 'main.html#results';
     } else {
         startNewAssessment();
     }
@@ -245,7 +267,7 @@ function viewCertDetails(index) {
 }
 
 function retakeCert(certId) {
-    window.location.href = `index.html#cert-${certId}`;
+    window.location.href = `main.html#cert-${certId}`;
 }
 
 // Close dropdown when clicking outside
