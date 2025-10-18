@@ -163,10 +163,44 @@ class DevSecOpsAnalyzer {
             });
 
             const result = await response.json();
+            
+            // Save certification results
+            this.saveCertificationResults(result);
+            
             this.showCertificationResults(result);
         } catch (error) {
             this.showAlert('Failed to submit test', 'error');
         }
+    }
+
+    saveCertificationResults(result) {
+        const certData = {
+            id: this.currentCert.id,
+            name: this.currentCert.name,
+            score: result.score,
+            total: result.total,
+            percentage: result.percentage,
+            passed: result.percentage >= 70,
+            date: new Date().toISOString(),
+            results: result.results
+        };
+
+        // Save to certification history
+        const certHistory = JSON.parse(localStorage.getItem('certificationHistory') || '[]');
+        certHistory.push(certData);
+        localStorage.setItem('certificationHistory', JSON.stringify(certHistory));
+
+        // Update recent activity
+        const recentActivity = JSON.parse(localStorage.getItem('recentActivity') || '[]');
+        recentActivity.unshift({
+            icon: '📜',
+            title: `${this.currentCert.name} Completed`,
+            description: `Score: ${result.percentage}% - ${result.percentage >= 70 ? 'PASSED' : 'NEEDS WORK'}`,
+            time: 'Just now'
+        });
+        
+        if (recentActivity.length > 5) recentActivity.pop();
+        localStorage.setItem('recentActivity', JSON.stringify(recentActivity));
     }
 
     showCertificationResults(result) {
@@ -315,11 +349,56 @@ class DevSecOpsAnalyzer {
             if (!response.ok) throw new Error('Submission failed');
             
             const result = await response.json();
+            
+            // Save assessment results locally
+            this.saveAssessmentResults(result);
+            
             this.showResults(result);
         } catch (error) {
             this.showAlert('Failed to submit assessment. Please try again.', 'error');
             console.error('Submission error:', error);
         }
+    }
+
+    saveAssessmentResults(result) {
+        // Save to localStorage for dashboard display
+        const assessmentData = {
+            score: result.score,
+            total: this.questions.length,
+            percentage: Math.round((result.score / this.questions.length) * 100),
+            results: result.results,
+            learningPath: result.learningPath,
+            date: new Date().toISOString(),
+            userId: result.userId
+        };
+
+        // Save individual assessment
+        const assessmentHistory = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+        assessmentHistory.push(assessmentData);
+        localStorage.setItem('assessmentHistory', JSON.stringify(assessmentHistory));
+
+        // Save latest results for dashboard
+        localStorage.setItem('lastAssessmentResults', JSON.stringify(assessmentData));
+
+        // Update recent activity
+        const recentActivity = JSON.parse(localStorage.getItem('recentActivity') || '[]');
+        recentActivity.unshift({
+            icon: '📝',
+            title: 'DevSecOps Assessment Completed',
+            description: `Score: ${assessmentData.percentage}% - ${this.getPerformanceText(assessmentData.percentage)}`,
+            time: 'Just now'
+        });
+        
+        // Keep only last 5 activities
+        if (recentActivity.length > 5) recentActivity.pop();
+        localStorage.setItem('recentActivity', JSON.stringify(recentActivity));
+    }
+
+    getPerformanceText(percentage) {
+        if (percentage >= 80) return "Excellent performance";
+        if (percentage >= 70) return "Good performance";
+        if (percentage >= 50) return "Average performance";
+        return "Needs improvement";
     }
 
     showResults(result) {

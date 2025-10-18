@@ -52,7 +52,7 @@ class Dashboard {
     updateStats(assessments, certifications) {
         // Update overview stats
         const overallScore = assessments.length > 0 ? 
-            Math.round(assessments.reduce((sum, a) => sum + a.score, 0) / assessments.length) : 0;
+            Math.round(assessments.reduce((sum, a) => sum + a.percentage, 0) / assessments.length) : 0;
         
         document.getElementById('overallScore').textContent = overallScore + '%';
         document.getElementById('assessmentCount').textContent = assessments.length;
@@ -136,13 +136,18 @@ class Dashboard {
                 <div class="assessment-details">
                     <p>Score: ${assessment.score}/${assessment.total} questions correct</p>
                     <p>Date: ${new Date(assessment.date).toLocaleDateString()}</p>
+                    <div class="category-breakdown">
+                        ${Object.entries(assessment.results || {}).map(([category, data]) => 
+                            `<span class="category-score">${category}: ${Math.round((data.correct/data.total)*100)}%</span>`
+                        ).join('')}
+                    </div>
                 </div>
                 <div class="assessment-actions">
                     <button class="btn-secondary" onclick="viewAssessmentDetails(${index})">View Details</button>
                     <button class="btn-primary" onclick="retakeAssessment(${index})">Retake</button>
                 </div>
             </div>
-        `).join('');
+        `).reverse().join(''); // Show latest first
     }
 
     loadCertificationsList() {
@@ -269,9 +274,28 @@ function logout() {
 
 function viewAssessmentDetails(index) {
     const assessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
-    const assessment = assessments[index];
+    const assessment = assessments[assessments.length - 1 - index]; // Reverse index since we show latest first
     
-    alert(`Assessment Details:\nScore: ${assessment.score}/${assessment.total}\nPercentage: ${assessment.percentage}%\nDate: ${new Date(assessment.date).toLocaleDateString()}`);
+    let detailsText = `Assessment Details:\n`;
+    detailsText += `Score: ${assessment.score}/${assessment.total} (${assessment.percentage}%)\n`;
+    detailsText += `Date: ${new Date(assessment.date).toLocaleDateString()}\n\n`;
+    
+    if (assessment.results) {
+        detailsText += `Category Breakdown:\n`;
+        Object.entries(assessment.results).forEach(([category, data]) => {
+            const percentage = Math.round((data.correct / data.total) * 100);
+            detailsText += `${category}: ${data.correct}/${data.total} (${percentage}%)\n`;
+        });
+    }
+    
+    if (assessment.learningPath && assessment.learningPath.length > 0) {
+        detailsText += `\nRecommended Focus Areas:\n`;
+        assessment.learningPath.forEach(item => {
+            detailsText += `• ${item.category} (${item.priority} Priority)\n`;
+        });
+    }
+    
+    alert(detailsText);
 }
 
 function retakeAssessment(index) {
