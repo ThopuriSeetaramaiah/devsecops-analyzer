@@ -1,12 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
 const path = require('path');
+const { awsCertifications, courses } = require('./certifications');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+// Email configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || 'devsecops.analyzer@gmail.com',
+    pass: process.env.EMAIL_PASS || 'your-app-password'
+  }
+});
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://mongo:27017/devsecops');
@@ -101,6 +112,49 @@ app.get('/api/assessment', (req, res) => {
   res.json(questions);
 });
 
+app.get('/api/certifications', (req, res) => {
+  res.json(Object.keys(awsCertifications).map(key => ({
+    id: key,
+    name: awsCertifications[key].name,
+    questionCount: awsCertifications[key].questions.length
+  })));
+});
+
+app.get('/api/certification/:id', (req, res) => {
+  const cert = awsCertifications[req.params.id];
+  if (!cert) return res.status(404).json({ error: 'Certification not found' });
+  res.json(cert);
+});
+
+app.post('/api/certification/:id/submit', async (req, res) => {
+  const { answers, userInfo } = req.body;
+  const cert = awsCertifications[req.params.id];
+  
+  if (!cert) return res.status(404).json({ error: 'Certification not found' });
+  
+  let score = 0;
+  const results = answers.map((answer, index) => {
+    const question = cert.questions[index];
+    const isCorrect = answer === question.correct;
+    if (isCorrect) score++;
+    
+    return {
+      question: question.question,
+      userAnswer: question.options[answer],
+      correctAnswer: question.options[question.correct],
+      isCorrect,
+      explanation: question.explanation
+    };
+  });
+
+  const percentage = Math.round((score / cert.questions.length) * 100);
+  
+  // Send email with results
+  await sendCertificationResults(userInfo, cert.name, score, cert.questions.length, percentage, results);
+  
+  res.json({ score, total: cert.questions.length, percentage, results });
+});
+
 app.post('/api/assessment/submit', async (req, res) => {
   const { answers, userInfo } = req.body;
   
@@ -127,6 +181,9 @@ app.post('/api/assessment/submit', async (req, res) => {
   });
   
   await user.save();
+  
+  // Send email with results
+  await sendAssessmentResults(userInfo, score, questions.length, results, learningPath);
   
   res.json({ score, results, learningPath, userId: user._id });
 });
@@ -173,6 +230,97 @@ function getResourcesForCategory(category) {
     ]
   };
   return resources[category] || [];
+}
+
+async function sendAssessmentResults(userInfo, score, total, results, learningPath) {
+  const percentage = Math.round((score / total) * 100);
+  
+  const emailHtml = `
+    <h2>🎯 DevSecOps Assessment Results</h2>
+    <p>Dear ${userInfo.name},</p>
+    <p>Thank you for completing the DevSecOps Skill Gap Assessment!</p>
+    
+    <h3>📊 Your Results:</h3>
+    <ul>
+      <li><strong>Overall Score:</strong> ${score}/${total} (${percentage}%)</li>
+      <li><strong>Performance Level:</strong> ${getPerformanceText(percentage)}</li>
+    </ul>
+    
+    <h3>📈 Category Breakdown:</h3>
+    ${Object.entries(results).map(([category, data]) => {
+      const catPercentage = Math.round((data.correct / data.total) * 100);
+      return `<p><strong>${category}:</strong> ${data.correct}/${data.total} (${catPercentage}%)</p>`;
+    }).join('')}
+    
+    <h3>🎯 Recommended Courses:</h3>
+    ${learningPath.map(item => `
+      <div style="margin: 15px 0; padding: 10px; border-left: 3px solid #007bff;">
+        <h4>${item.category} (${item.priority} Priority)</h4>
+        ${courses[item.category] ? courses[item.category].map(course => 
+          `<p>• <strong>${course.name}</strong> - ${course.provider} (${course.duration})<br>
+           <a href="${course.url}">${course.url}</a></p>`
+        ).join('') : ''}
+      </div>
+    `).join('')}
+    
+    <p>Keep learning and improving your DevSecOps skills!</p>
+    <p>Best regards,<br>DevSecOps Analyzer Team</p>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: 'DevSecOps Analyzer <devsecops.analyzer@gmail.com>',
+      to: userInfo.email,
+      subject: `Your DevSecOps Assessment Results - ${percentage}% Score`,
+      html: emailHtml
+    });
+  } catch (error) {
+    console.error('Email sending failed:', error);
+  }
+}
+
+async function sendCertificationResults(userInfo, certName, score, total, percentage, results) {
+  const emailHtml = `
+    <h2>📜 ${certName} Practice Test Results</h2>
+    <p>Dear ${userInfo.name},</p>
+    <p>You completed the ${certName} practice test!</p>
+    
+    <h3>📊 Results:</h3>
+    <ul>
+      <li><strong>Score:</strong> ${score}/${total} (${percentage}%)</li>
+      <li><strong>Status:</strong> ${percentage >= 70 ? '✅ PASS' : '❌ NEEDS IMPROVEMENT'}</li>
+    </ul>
+    
+    <h3>📝 Detailed Results:</h3>
+    ${results.map((result, index) => `
+      <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd;">
+        <p><strong>Q${index + 1}:</strong> ${result.question}</p>
+        <p><strong>Your Answer:</strong> ${result.userAnswer} ${result.isCorrect ? '✅' : '❌'}</p>
+        ${!result.isCorrect ? `<p><strong>Correct Answer:</strong> ${result.correctAnswer}</p>` : ''}
+        <p><em>${result.explanation}</em></p>
+      </div>
+    `).join('')}
+    
+    <p>Keep practicing to improve your certification readiness!</p>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: 'DevSecOps Analyzer <devsecops.analyzer@gmail.com>',
+      to: userInfo.email,
+      subject: `${certName} Practice Test Results - ${percentage}%`,
+      html: emailHtml
+    });
+  } catch (error) {
+    console.error('Email sending failed:', error);
+  }
+}
+
+function getPerformanceText(percentage) {
+  if (percentage >= 80) return "🌟 Excellent - You're DevSecOps ready!";
+  if (percentage >= 70) return "✅ Good - Minor improvements needed";
+  if (percentage >= 50) return "⚠️ Average - Focus on key areas";
+  return "🔴 Needs Improvement - Significant learning required";
 }
 
 app.get('/api/progress/:userId', async (req, res) => {

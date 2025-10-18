@@ -3,18 +3,185 @@ class DevSecOpsAnalyzer {
         this.questions = [];
         this.answers = [];
         this.currentUser = null;
+        this.certifications = [];
+        this.currentCert = null;
         this.init();
     }
 
     async init() {
         this.bindEvents();
         await this.loadQuestions();
+        await this.loadCertifications();
     }
 
     bindEvents() {
         document.getElementById('startBtn').addEventListener('click', () => this.startAssessment());
         document.getElementById('submitBtn').addEventListener('click', () => this.submitAssessment());
         document.getElementById('retakeBtn').addEventListener('click', () => this.retakeAssessment());
+        document.getElementById('submitCertBtn').addEventListener('click', () => this.submitCertification());
+        document.getElementById('backToCertsBtn').addEventListener('click', () => this.showCertifications());
+        document.getElementById('backToCertsBtn2').addEventListener('click', () => this.showCertifications());
+        document.getElementById('retakeCertBtn').addEventListener('click', () => this.retakeCertification());
+    }
+
+    async loadCertifications() {
+        try {
+            const response = await fetch('/api/certifications');
+            this.certifications = await response.json();
+            this.renderCertifications();
+        } catch (error) {
+            console.error('Failed to load certifications:', error);
+        }
+    }
+
+    renderCertifications() {
+        const container = document.getElementById('certificationsList');
+        container.innerHTML = `
+            <div class="cert-grid">
+                ${this.certifications.map(cert => `
+                    <div class="cert-card" onclick="app.startCertification('${cert.id}')">
+                        <div class="cert-title">${cert.name}</div>
+                        <div class="cert-info">${cert.questionCount} Practice Questions</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    async startCertification(certId) {
+        try {
+            const response = await fetch(`/api/certification/${certId}`);
+            this.currentCert = await response.json();
+            this.currentCert.id = certId;
+            
+            document.getElementById('certificationsList').style.display = 'none';
+            document.getElementById('certificationTest').style.display = 'block';
+            
+            this.renderCertificationTest();
+        } catch (error) {
+            this.showAlert('Failed to load certification test', 'error');
+        }
+    }
+
+    renderCertificationTest() {
+        document.getElementById('certTestHeader').innerHTML = `
+            <h3>📜 ${this.currentCert.name}</h3>
+            <p>Answer all ${this.currentCert.questions.length} questions. Each question includes detailed explanations.</p>
+        `;
+
+        const container = document.getElementById('certQuestionsContainer');
+        container.innerHTML = '';
+        
+        this.currentCert.questions.forEach((q, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-card';
+            questionDiv.innerHTML = `
+                <div class="question-header">
+                    <span class="category-badge">Question ${index + 1}</span>
+                    <span class="question-number">${index + 1}/${this.currentCert.questions.length}</span>
+                </div>
+                <h3 class="question-text">${q.question}</h3>
+                <div class="options">
+                    ${q.options.map((option, i) => `
+                        <label class="option-label">
+                            <input type="radio" name="cert_q${index}" value="${i}" class="option-input">
+                            <span class="option-text">${option}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+            container.appendChild(questionDiv);
+        });
+    }
+
+    async submitCertification() {
+        const answers = [];
+        let unanswered = 0;
+        
+        this.currentCert.questions.forEach((_, index) => {
+            const selected = document.querySelector(`input[name="cert_q${index}"]:checked`);
+            if (selected) {
+                answers.push(parseInt(selected.value));
+            } else {
+                answers.push(-1);
+                unanswered++;
+            }
+        });
+
+        if (unanswered > 0) {
+            this.showAlert(`Please answer all questions (${unanswered} remaining)`, 'warning');
+            return;
+        }
+
+        if (!this.currentUser) {
+            const name = prompt('Enter your name:');
+            const email = prompt('Enter your email:');
+            if (!name || !email) return;
+            this.currentUser = { name, email };
+        }
+
+        try {
+            const response = await fetch(`/api/certification/${this.currentCert.id}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    answers, 
+                    userInfo: this.currentUser 
+                })
+            });
+
+            const result = await response.json();
+            this.showCertificationResults(result);
+        } catch (error) {
+            this.showAlert('Failed to submit test', 'error');
+        }
+    }
+
+    showCertificationResults(result) {
+        document.getElementById('certificationTest').style.display = 'none';
+        document.getElementById('certResults').style.display = 'block';
+        
+        const passStatus = result.percentage >= 70 ? 'PASS' : 'NEEDS IMPROVEMENT';
+        const statusClass = result.percentage >= 70 ? 'good' : 'poor';
+        
+        document.getElementById('certResultsContainer').innerHTML = `
+            <div class="score-summary">
+                <div class="overall-score ${statusClass}">
+                    <h2>${result.percentage}%</h2>
+                    <p>${passStatus}</p>
+                </div>
+                <div class="score-details">
+                    <p><strong>${result.score}</strong> out of <strong>${result.total}</strong> questions correct</p>
+                    <p>Results have been sent to your email with detailed explanations.</p>
+                </div>
+            </div>
+            
+            <div class="category-breakdown">
+                <h3>📝 Question Review</h3>
+                ${result.results.map((res, index) => `
+                    <div class="category-item">
+                        <div class="question-review ${res.isCorrect ? 'correct' : 'incorrect'}">
+                            <p><strong>Q${index + 1}:</strong> ${res.question}</p>
+                            <p><strong>Your Answer:</strong> ${res.userAnswer} ${res.isCorrect ? '✅' : '❌'}</p>
+                            ${!res.isCorrect ? `<p><strong>Correct Answer:</strong> ${res.correctAnswer}</p>` : ''}
+                            <p class="explanation"><em>${res.explanation}</em></p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    showCertifications() {
+        document.getElementById('certificationTest').style.display = 'none';
+        document.getElementById('certResults').style.display = 'none';
+        document.getElementById('certificationsList').style.display = 'block';
+    }
+
+    retakeCertification() {
+        this.renderCertificationTest();
+        document.getElementById('certResults').style.display = 'none';
+        document.getElementById('certificationTest').style.display = 'block';
     }
 
     async loadQuestions() {
@@ -229,7 +396,26 @@ class DevSecOpsAnalyzer {
     }
 }
 
+// Global functions
+function showTab(tabId) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.display = 'none';
+    });
+    
+    // Show selected tab
+    const selectedTab = document.getElementById(tabId);
+    selectedTab.classList.add('active');
+    selectedTab.style.display = 'block';
+    
+    // Update nav buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
 // Initialize the app when DOM is loaded
+let app;
 document.addEventListener('DOMContentLoaded', () => {
-    new DevSecOpsAnalyzer();
+    app = new DevSecOpsAnalyzer();
 });
