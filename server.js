@@ -848,31 +848,203 @@ function getSalaryProjection(overallScore, currentLevel) {
   };
 }
 
-// Subscription Management
-app.post('/api/subscription/upgrade', async (req, res) => {
-  try {
-    const { userId, plan } = req.body;
-    
-    await User.findByIdAndUpdate(userId, { 
-      subscription: plan,
-      subscriptionDate: new Date()
-    });
+// Unique Value Proposition APIs
 
-    res.json({ 
-      message: 'Subscription upgraded successfully',
-      plan: plan,
-      features: plan === 'pro' ? [
-        'Advanced Analytics',
-        'AI-Generated Questions', 
-        'Unlimited Practice',
-        'Industry Benchmarking',
-        'Predictive Insights'
-      ] : ['Basic Assessment']
-    });
+// Smart Course Curation - Our Secret Sauce
+app.post('/api/smart-curation', async (req, res) => {
+  try {
+    const { userId, careerGoal, timeframe, budget } = req.body;
+    const user = await User.findById(userId);
+    
+    // Analyze user's current skills vs target role requirements
+    const skillGaps = analyzeSkillGaps(user.assessmentResults, careerGoal);
+    const jobMarketData = await getJobMarketIntelligence(careerGoal);
+    
+    // AI-powered course selection across ALL platforms
+    const smartRecommendations = {
+      priority_path: generatePriorityPath(skillGaps, jobMarketData, timeframe),
+      cost_optimization: optimizeCosts(skillGaps, budget),
+      job_market_alignment: jobMarketData,
+      success_probability: calculateSuccessProbability(user, careerGoal),
+      estimated_timeline: timeframe,
+      salary_impact: calculateSalaryImpact(skillGaps, careerGoal)
+    };
+
+    res.json(smartRecommendations);
   } catch (error) {
-    res.status(500).json({ message: 'Subscription upgrade failed' });
+    res.status(500).json({ message: 'Smart curation failed' });
   }
 });
+
+// Real-time Job Market Intelligence
+app.get('/api/job-intelligence/:role', async (req, res) => {
+  const role = req.params.role;
+  
+  // Simulate real-time job market analysis
+  const jobIntelligence = {
+    current_demand: {
+      total_openings: 2847,
+      growth_rate: "+23% this quarter",
+      avg_salary: "$125,000",
+      remote_percentage: 78
+    },
+    skill_requirements: {
+      must_have: ["Kubernetes", "AWS", "CI/CD", "Security"],
+      nice_to_have: ["Terraform", "Helm", "Istio"],
+      trending: ["Platform Engineering", "GitOps", "FinOps"]
+    },
+    company_insights: {
+      faang_requirements: ["System Design", "Large Scale Security", "Compliance"],
+      startup_focus: ["Full Stack DevOps", "Cost Optimization", "Rapid Deployment"],
+      enterprise_needs: ["Governance", "Compliance", "Legacy Integration"]
+    },
+    certification_value: {
+      "AWS Security Specialty": { demand: 95, salary_boost: "$18k" },
+      "CKS": { demand: 88, salary_boost: "$15k" },
+      "CISSP": { demand: 76, salary_boost: "$12k" }
+    }
+  };
+
+  res.json(jobIntelligence);
+});
+
+// Cross-Platform Progress Tracking
+app.post('/api/unified-progress', async (req, res) => {
+  try {
+    const { userId, platformData } = req.body;
+    
+    // Aggregate progress from multiple platforms
+    const unifiedProgress = {
+      overall_completion: calculateOverallProgress(platformData),
+      skill_development: mapSkillDevelopment(platformData),
+      learning_velocity: calculateLearningVelocity(platformData),
+      next_milestone: getNextMilestone(platformData),
+      career_readiness: assessCareerReadiness(platformData),
+      platform_efficiency: analyzePlatformEfficiency(platformData)
+    };
+
+    // Save unified progress
+    await User.findByIdAndUpdate(userId, { 
+      unifiedProgress: unifiedProgress,
+      lastProgressUpdate: new Date()
+    });
+
+    res.json(unifiedProgress);
+  } catch (error) {
+    res.status(500).json({ message: 'Progress tracking failed' });
+  }
+});
+
+// Cost Optimization Engine
+app.post('/api/cost-optimizer', async (req, res) => {
+  try {
+    const { skillGaps, budget, timeframe } = req.body;
+    
+    const optimization = {
+      recommended_plan: optimizeCoursePlan(skillGaps, budget, timeframe),
+      cost_breakdown: {
+        total_cost: calculateTotalCost(skillGaps),
+        monthly_budget: budget,
+        savings_opportunities: findSavings(skillGaps),
+        roi_projection: calculateROI(skillGaps)
+      },
+      alternative_paths: generateAlternativePaths(skillGaps, budget),
+      free_resources: getFreeAlternatives(skillGaps)
+    };
+
+    res.json(optimization);
+  } catch (error) {
+    res.status(500).json({ message: 'Cost optimization failed' });
+  }
+});
+
+// Helper functions
+function analyzeSkillGaps(assessmentResults, careerGoal) {
+  // Analyze current skills vs target role requirements
+  const targetSkills = {
+    "Senior DevSecOps Engineer": {
+      "Kubernetes": 90,
+      "AWS Security": 85,
+      "CI/CD": 80,
+      "Compliance": 75
+    }
+  };
+
+  const currentSkills = {};
+  Object.entries(assessmentResults || {}).forEach(([category, data]) => {
+    currentSkills[category] = Math.round((data.correct / data.total) * 100);
+  });
+
+  const gaps = {};
+  const target = targetSkills[careerGoal] || targetSkills["Senior DevSecOps Engineer"];
+  
+  Object.entries(target).forEach(([skill, required]) => {
+    const current = currentSkills[skill] || 0;
+    if (current < required) {
+      gaps[skill] = {
+        current: current,
+        required: required,
+        gap: required - current,
+        priority: required - current > 30 ? 'High' : 'Medium'
+      };
+    }
+  });
+
+  return gaps;
+}
+
+async function getJobMarketIntelligence(role) {
+  // Simulate job market API call
+  return {
+    demand_score: 92,
+    salary_range: "$110k - $150k",
+    key_skills: ["Kubernetes", "AWS", "Security"],
+    trending_skills: ["Platform Engineering", "GitOps"],
+    certification_priority: ["AWS Security Specialty", "CKS"]
+  };
+}
+
+function generatePriorityPath(skillGaps, jobMarketData, timeframe) {
+  const priorityOrder = Object.entries(skillGaps)
+    .sort(([,a], [,b]) => b.gap - a.gap)
+    .map(([skill, data]) => ({
+      skill,
+      gap: data.gap,
+      courses: getOptimalCourses(skill, data.gap),
+      estimated_time: estimateTimeToComplete(skill, data.gap),
+      market_demand: jobMarketData.key_skills.includes(skill) ? 'High' : 'Medium'
+    }));
+
+  return priorityOrder;
+}
+
+function getOptimalCourses(skill, gapSize) {
+  const courseDatabase = {
+    "Kubernetes": [
+      { platform: "KodeKloud", course: "Kubernetes for Absolute Beginners", efficiency: 95 },
+      { platform: "Pluralsight", course: "Kubernetes Deep Dive", efficiency: 88 }
+    ],
+    "AWS Security": [
+      { platform: "KodeKloud", course: "AWS Security Specialty", efficiency: 92 },
+      { platform: "Udemy", course: "AWS Security Masterclass", efficiency: 85 }
+    ]
+  };
+
+  return courseDatabase[skill] || [];
+}
+
+function optimizeCosts(skillGaps, budget) {
+  // Calculate most cost-effective learning path
+  const totalCost = Object.keys(skillGaps).length * 50; // Average course cost
+  const monthlyBudget = budget || 100;
+  
+  return {
+    total_estimated_cost: totalCost,
+    monthly_budget_needed: Math.ceil(totalCost / 6), // 6 month timeline
+    savings_with_subscriptions: totalCost * 0.3, // 30% savings with subscriptions
+    recommended_approach: monthlyBudget >= 50 ? 'Subscription Model' : 'Individual Courses'
+  };
+}
 
 app.get('/api/progress/:userId', async (req, res) => {
   const user = await User.findById(req.params.userId);
