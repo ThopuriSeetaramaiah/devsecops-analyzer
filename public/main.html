@@ -24,16 +24,19 @@
 
         <!-- Assessment Tab -->
         <div id="assessment-tab" class="tab-content active">
-        <!-- User Information Section -->
+        <!-- User Information Section - Only show if not logged in -->
         <div id="userForm" class="section">
             <h2>👤 Get Started</h2>
-            <div class="form-group">
-                <label for="name">Full Name</label>
-                <input type="text" id="name" class="form-input" placeholder="Enter your full name" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" class="form-input" placeholder="Enter your email address" required>
+            <p id="userWelcome" style="display: none;">Welcome back! Click below to start your assessment.</p>
+            <div id="guestForm">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" class="form-input" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" class="form-input" placeholder="Enter your email address" required>
+                </div>
             </div>
             <button id="startBtn" class="btn">🚀 Start Assessment</button>
         </div>

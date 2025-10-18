@@ -12,6 +12,24 @@ class DevSecOpsAnalyzer {
         this.bindEvents();
         await this.loadQuestions();
         await this.loadCertifications();
+        this.checkUserStatus();
+    }
+
+    checkUserStatus() {
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const guestMode = localStorage.getItem('guestMode');
+        
+        if (user) {
+            // User is logged in, hide form fields and show welcome
+            document.getElementById('guestForm').style.display = 'none';
+            document.getElementById('userWelcome').style.display = 'block';
+            document.getElementById('userWelcome').textContent = 
+                `Welcome back, ${user.firstName || user.name}! Click below to start your assessment.`;
+        } else if (!guestMode) {
+            // Show guest form
+            document.getElementById('guestForm').style.display = 'block';
+            document.getElementById('userWelcome').style.display = 'none';
+        }
     }
 
     bindEvents() {
@@ -113,11 +131,25 @@ class DevSecOpsAnalyzer {
             return;
         }
 
+        // Use current user or ask for info
         if (!this.currentUser) {
-            const name = prompt('Enter your name:');
-            const email = prompt('Enter your email:');
-            if (!name || !email) return;
-            this.currentUser = { name, email };
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const guestMode = localStorage.getItem('guestMode');
+            
+            if (user) {
+                this.currentUser = {
+                    name: user.name || `${user.firstName} ${user.lastName}`,
+                    email: user.email
+                };
+            } else if (guestMode) {
+                const name = prompt('Enter your name:');
+                const email = prompt('Enter your email:');
+                if (!name || !email) return;
+                this.currentUser = { name, email };
+            } else {
+                window.location.href = 'login.html';
+                return;
+            }
         }
 
         try {
@@ -194,17 +226,35 @@ class DevSecOpsAnalyzer {
     }
 
     startAssessment() {
-        const name = document.getElementById('name').value.trim();
-        const email = document.getElementById('email').value.trim();
+        // Check if user is logged in
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const guestMode = localStorage.getItem('guestMode');
         
-        if (!name || !email) {
-            this.showAlert('Please fill in all fields', 'error');
-            return;
+        if (user) {
+            // User is logged in, use their data
+            this.currentUser = {
+                name: user.name || `${user.firstName} ${user.lastName}`,
+                email: user.email
+            };
+            this.showSection('assessment');
+            this.renderQuestions();
+        } else if (guestMode) {
+            // Guest mode, ask for basic info
+            const name = prompt('Enter your name for the assessment:');
+            const email = prompt('Enter your email for results:');
+            
+            if (!name || !email) {
+                this.showAlert('Name and email are required for assessment', 'error');
+                return;
+            }
+            
+            this.currentUser = { name, email };
+            this.showSection('assessment');
+            this.renderQuestions();
+        } else {
+            // Not logged in, redirect to login
+            window.location.href = 'login.html';
         }
-
-        this.currentUser = { name, email };
-        this.showSection('assessment');
-        this.renderQuestions();
     }
 
     renderQuestions() {
