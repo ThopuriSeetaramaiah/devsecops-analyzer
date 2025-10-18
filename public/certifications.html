@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certification Practice - DevSecOps Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Certification Practice Hub</h1>
+            <p>Practice with comprehensive question banks for top IT certifications</p>
+            <div class="header-actions">
+                <a href="dashboard.html" class="header-btn secondary">← Back to Home</a>
+            </div>
+        </div>
+
+        <div class="certification-grid">
+            <div class="cert-category">
+                <h2>☁️ AWS Certifications</h2>
+                <div class="cert-cards">
+                    <div class="cert-card" onclick="startCertPractice('AWS-SAA')">
+                        <div class="cert-icon">📋</div>
+                        <h3>Solutions Architect Associate</h3>
+                        <div class="cert-stats">
+                            <span class="question-count" id="aws-saa-count">Loading...</span>
+                            <span class="difficulty">Intermediate</span>
+                        </div>
+                        <p>Design resilient architectures and define operationally excellent solutions</p>
+                    </div>
+                    
+                    <div class="cert-card" onclick="startCertPractice('AWS-Security')">
+                        <div class="cert-icon">🔒</div>
+                        <h3>Security Specialty</h3>
+                        <div class="cert-stats">
+                            <span class="question-count" id="aws-sec-count">Loading...</span>
+                            <span class="difficulty">Advanced</span>
+                        </div>
+                        <p>Demonstrate expertise in securing AWS workloads and applications</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cert-category">
+                <h2>🛡️ Security Certifications</h2>
+                <div class="cert-cards">
+                    <div class="cert-card" onclick="startCertPractice('CISSP')">
+                        <div class="cert-icon">🎖️</div>
+                        <h3>CISSP</h3>
+                        <div class="cert-stats">
+                            <span class="question-count" id="cissp-count">Loading...</span>
+                            <span class="difficulty">Advanced</span>
+                        </div>
+                        <p>Certified Information Systems Security Professional</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cert-category">
+                <h2>☸️ Kubernetes Certifications</h2>
+                <div class="cert-cards">
+                    <div class="cert-card" onclick="startCertPractice('CKA')">
+                        <div class="cert-icon">⚙️</div>
+                        <h3>Certified Kubernetes Administrator</h3>
+                        <div class="cert-stats">
+                            <span class="question-count" id="cka-count">Loading...</span>
+                            <span class="difficulty">Intermediate</span>
+                        </div>
+                        <p>Demonstrate skills in Kubernetes administration</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cert-category">
+                <h2>🔧 DevSecOps Practice</h2>
+                <div class="cert-cards">
+                    <div class="cert-card" onclick="startCertPractice('DevSecOps')">
+                        <div class="cert-icon">🚀</div>
+                        <h3>DevSecOps Engineer</h3>
+                        <div class="cert-stats">
+                            <span class="question-count" id="devsecops-count">Loading...</span>
+                            <span class="difficulty">Mixed</span>
+                        </div>
+                        <p>Comprehensive DevSecOps skills assessment</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Practice Interface -->
+        <div id="practiceInterface" class="section" style="display: none;">
+            <div class="practice-header">
+                <h2 id="practiceTitle">Certification Practice</h2>
+                <div class="practice-controls">
+                    <select id="difficultySelect">
+                        <option value="mixed">Mixed Difficulty</option>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                    <select id="questionCount">
+                        <option value="10">10 Questions</option>
+                        <option value="20">20 Questions</option>
+                        <option value="50">50 Questions</option>
+                    </select>
+                    <button id="startPractice" class="btn">Start Practice</button>
+                    <button id="backToCerts" class="btn btn-secondary">← Back</button>
+                </div>
+            </div>
+            
+            <div id="questionsContainer"></div>
+            <button id="submitPractice" class="btn" style="display: none;">Submit Practice Test</button>
+        </div>
+
+        <!-- Results Interface -->
+        <div id="resultsInterface" class="section" style="display: none;">
+            <h2>📊 Practice Results</h2>
+            <div id="practiceResults"></div>
+            <div class="results-actions">
+                <button onclick="retakePractice()" class="btn">🔄 Retake</button>
+                <button onclick="backToCertifications()" class="btn btn-secondary">← Back to Certifications</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="certifications.js"></script>
+</body>
+</html>

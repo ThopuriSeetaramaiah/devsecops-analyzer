@@ -6,6 +6,7 @@ const path = require('path');
 const { awsCertifications, courses } = require('./certifications');
 const { learningPlatforms, certificationPaths, advancedOpportunities } = require('./learning-platforms');
 const { generateDynamicQuestions } = require('./dynamic-questions');
+const { QuestionGenerator } = require('./comprehensive-questions');
 const CourseRecommendationEngine = require('./course-scraper');
 const AIQuestionGenerator = require('./ai-integration');
 const AdvancedAnalytics = require('./analytics-engine');
@@ -15,10 +16,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Initialize AI, Analytics, and Course Engine
+// Initialize AI, Analytics, Course Engine, and Question Generator
 const aiGenerator = new AIQuestionGenerator();
 const analytics = new AdvancedAnalytics();
 const courseEngine = new CourseRecommendationEngine();
+const questionGenerator = new QuestionGenerator();
 
 // Email configuration
 const transporter = nodemailer.createTransport({
@@ -200,17 +202,121 @@ const questions = [
   }
 ];
 
-// Dynamic Questions API - Never Same Questions
+// Comprehensive Question Database API
+app.get('/api/questions/:examType', (req, res) => {
+  try {
+    const { examType } = req.params;
+    const { count = 10, difficulty = 'mixed', userId = 'guest' } = req.query;
+    
+    const questions = questionGenerator.generateExamQuestions(
+      examType, 
+      parseInt(count), 
+      difficulty, 
+      userId
+    );
+    
+    res.json({
+      examType,
+      questions,
+      totalAvailable: questionGenerator.questionBank[examType]?.length || 0,
+      difficulty,
+      generated_at: new Date()
+    });
+  } catch (error) {
+    console.error('Question generation error:', error);
+    res.status(500).json({ message: 'Failed to generate questions' });
+  }
+});
+
+// Role-based question generation
+app.get('/api/questions/role/:roleName', (req, res) => {
+  try {
+    const { roleName } = req.params;
+    const { count = 15, userId = 'guest' } = req.query;
+    
+    const questions = questionGenerator.generateRoleBasedQuestions(roleName, parseInt(count));
+    
+    res.json({
+      role: roleName,
+      questions,
+      count: questions.length,
+      generated_at: new Date()
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to generate role-based questions' });
+  }
+});
+
+// Question database statistics
+app.get('/api/questions/stats', (req, res) => {
+  try {
+    const stats = questionGenerator.getQuestionStats();
+    res.json({
+      statistics: stats,
+      total_questions: Object.values(stats).reduce((sum, exam) => sum + exam.total, 0),
+      available_exams: Object.keys(stats)
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get question statistics' });
+  }
+});
+
+// Add community-contributed questions
+app.post('/api/questions/contribute', async (req, res) => {
+  try {
+    const { examType, question, options, correct, explanation, domain, difficulty } = req.body;
+    
+    // Validate question data
+    if (!question || !options || options.length !== 4 || correct < 0 || correct > 3) {
+      return res.status(400).json({ message: 'Invalid question format' });
+    }
+    
+    const questionData = {
+      question,
+      options,
+      correct,
+      explanation,
+      domain,
+      difficulty: difficulty || 'intermediate'
+    };
+    
+    const questionId = questionGenerator.addQuestion(examType, questionData);
+    
+    res.json({
+      message: 'Question added successfully',
+      questionId,
+      examType
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to add question' });
+  }
+});
+
+// Reset user question history
+app.post('/api/questions/reset-history', (req, res) => {
+  try {
+    const { userId, examType } = req.body;
+    
+    questionGenerator.resetUserHistory(userId, examType);
+    
+    res.json({
+      message: 'Question history reset successfully',
+      userId,
+      examType: examType || 'all'
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to reset question history' });
+  }
+});
+
+// Legacy API for backward compatibility
 app.get('/api/assessment', (req, res) => {
-  const { userId, difficulty = 'mixed' } = req.query;
+  const { userId = 'guest', difficulty = 'mixed' } = req.query;
   
-  // Get user's question history to avoid repeats
-  const userHistory = []; // Would fetch from database in production
+  // Use comprehensive question generator for DevSecOps questions
+  const questions = questionGenerator.generateRoleBasedQuestions('DevSecOps Engineer', 10);
   
-  // Generate dynamic questions
-  const dynamicQuestions = generateDynamicQuestions(userHistory, difficulty, 10);
-  
-  res.json(dynamicQuestions);
+  res.json(questions);
 });
 
 // Smart Course Recommendations with Cost Analysis
