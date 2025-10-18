@@ -44,6 +44,55 @@ const questions = [
     question: "Which AWS service is primarily used for container orchestration?",
     options: ["EC2", "EKS", "S3", "RDS"],
     correct: 1
+  },
+  {
+    id: 4,
+    category: "Security",
+    question: "What is the OWASP Top 10?",
+    options: ["Top 10 programming languages", "Top 10 web application security risks", "Top 10 cloud providers", "Top 10 DevOps tools"],
+    correct: 1
+  },
+  {
+    id: 5,
+    category: "CI/CD",
+    question: "What is Infrastructure as Code (IaC)?",
+    options: ["Writing code in infrastructure", "Managing infrastructure through code", "Coding on servers", "Infrastructure documentation"],
+    correct: 1
+  },
+  {
+    id: 6,
+    category: "Cloud",
+    question: "What is the principle of least privilege?",
+    options: ["Give maximum access to all users", "Give minimum required access to users", "Remove all user access", "Give access based on seniority"],
+    correct: 1
+  },
+  {
+    id: 7,
+    category: "Security",
+    question: "What is DAST in security testing?",
+    options: ["Dynamic Application Security Testing", "Data Application Security Tool", "Direct Application Security Test", "Database Application Security Testing"],
+    correct: 0
+  },
+  {
+    id: 8,
+    category: "CI/CD",
+    question: "What is the purpose of automated testing in CI/CD?",
+    options: ["Slow down deployment", "Catch bugs early and ensure quality", "Increase manual work", "Replace developers"],
+    correct: 1
+  },
+  {
+    id: 9,
+    category: "Cloud",
+    question: "What is container security scanning?",
+    options: ["Scanning for container sizes", "Checking containers for vulnerabilities", "Counting containers", "Container performance monitoring"],
+    correct: 1
+  },
+  {
+    id: 10,
+    category: "Security",
+    question: "What is the purpose of security compliance frameworks?",
+    options: ["Increase complexity", "Provide security guidelines and standards", "Reduce security", "Eliminate audits"],
+    correct: 1
   }
 ];
 
@@ -101,9 +150,27 @@ function generateLearningPath(results) {
 
 function getResourcesForCategory(category) {
   const resources = {
-    "CI/CD": ["Jenkins Tutorial", "GitHub Actions Guide", "Docker Basics"],
-    "Security": ["OWASP Top 10", "Security Testing Tools", "Vulnerability Assessment"],
-    "Cloud": ["AWS Security", "Kubernetes Security", "Cloud Compliance"]
+    "CI/CD": [
+      "Jenkins Pipeline Tutorial",
+      "GitHub Actions Hands-on Lab", 
+      "Docker & Kubernetes Fundamentals",
+      "GitLab CI/CD Best Practices",
+      "Infrastructure as Code with Terraform"
+    ],
+    "Security": [
+      "OWASP Top 10 Deep Dive",
+      "Security Testing Tools (SAST/DAST)",
+      "Vulnerability Assessment & Management",
+      "Secure Code Review Practices",
+      "Application Security Fundamentals"
+    ],
+    "Cloud": [
+      "AWS Security Best Practices",
+      "Kubernetes Security Hardening",
+      "Cloud Compliance & Governance",
+      "Container Security Scanning",
+      "Identity & Access Management (IAM)"
+    ]
   };
   return resources[category] || [];
 }

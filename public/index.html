@@ -1,128 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevSecOps Skill Gap Analyzer</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .question { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
-        .options { margin: 10px 0; }
-        .option { margin: 5px 0; }
-        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
-        .results { background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; }
-        .learning-path { background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 10px 0; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>DevSecOps Skill Gap Analyzer</h1>
-    
-    <div id="userForm">
-        <h2>User Information</h2>
-        <input type="text" id="name" placeholder="Your Name" required>
-        <input type="email" id="email" placeholder="Your Email" required>
-        <button onclick="startAssessment()">Start Assessment</button>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ DevSecOps Skill Gap Analyzer</h1>
+            <p>Identify your skill gaps and get a personalized learning path to become DevSecOps ready</p>
+        </div>
+
+        <!-- User Information Section -->
+        <div id="userForm" class="section">
+            <h2>👤 Get Started</h2>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" class="form-input" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" class="form-input" placeholder="Enter your email address" required>
+            </div>
+            <button id="startBtn" class="btn">🚀 Start Assessment</button>
+        </div>
+
+        <!-- Assessment Section -->
+        <div id="assessment" class="section" style="display: none;">
+            <h2>📝 DevSecOps Assessment</h2>
+            <p>Answer all questions to get your personalized learning path. Take your time and choose the best answer.</p>
+            <div id="questionsContainer"></div>
+            <button id="submitBtn" class="btn">✅ Submit Assessment</button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="section" style="display: none;">
+            <h2>📊 Your Results</h2>
+            <div id="resultsContainer"></div>
+            <button id="retakeBtn" class="btn">🔄 Retake Assessment</button>
+        </div>
     </div>
 
-    <div id="assessment" style="display:none;">
-        <h2>Assessment</h2>
-        <div id="questions"></div>
-        <button onclick="submitAssessment()">Submit Assessment</button>
-    </div>
-
-    <div id="results" style="display:none;"></div>
-
-    <script>
-        let questions = [];
-        let answers = [];
-
-        async function startAssessment() {
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            
-            if (!name || !email) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            const response = await fetch('/api/assessment');
-            questions = await response.json();
-            
-            document.getElementById('userForm').style.display = 'none';
-            document.getElementById('assessment').style.display = 'block';
-            
-            renderQuestions();
-        }
-
-        function renderQuestions() {
-            const container = document.getElementById('questions');
-            container.innerHTML = '';
-            
-            questions.forEach((q, index) => {
-                const div = document.createElement('div');
-                div.className = 'question';
-                div.innerHTML = `
-                    <h3>${q.category}: ${q.question}</h3>
-                    <div class="options">
-                        ${q.options.map((option, i) => `
-                            <div class="option">
-                                <input type="radio" name="q${index}" value="${i}" id="q${index}_${i}">
-                                <label for="q${index}_${i}">${option}</label>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        async function submitAssessment() {
-            answers = [];
-            questions.forEach((_, index) => {
-                const selected = document.querySelector(`input[name="q${index}"]:checked`);
-                answers.push(selected ? parseInt(selected.value) : -1);
-            });
-
-            const userInfo = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value
-            };
-
-            const response = await fetch('/api/assessment/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ answers, userInfo })
-            });
-
-            const result = await response.json();
-            showResults(result);
-        }
-
-        function showResults(result) {
-            document.getElementById('assessment').style.display = 'none';
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.style.display = 'block';
-            
-            resultsDiv.innerHTML = `
-                <div class="results">
-                    <h2>Assessment Results</h2>
-                    <p><strong>Overall Score:</strong> ${result.score}/${questions.length} (${Math.round(result.score/questions.length*100)}%)</p>
-                    
-                    <h3>Category Breakdown:</h3>
-                    ${Object.entries(result.results).map(([category, data]) => `
-                        <p><strong>${category}:</strong> ${data.correct}/${data.total} (${Math.round(data.correct/data.total*100)}%)</p>
-                    `).join('')}
-                    
-                    <h3>Personalized Learning Path:</h3>
-                    ${result.learningPath.map(item => `
-                        <div class="learning-path">
-                            <h4>${item.category} (Priority: ${item.priority})</h4>
-                            <ul>
-                                ${item.resources.map(resource => `<li>${resource}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
