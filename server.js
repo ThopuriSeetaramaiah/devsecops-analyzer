@@ -10,17 +10,19 @@ const { QuestionGenerator } = require('./comprehensive-questions');
 const CourseRecommendationEngine = require('./course-scraper');
 const AIQuestionGenerator = require('./ai-integration');
 const AdvancedAnalytics = require('./analytics-engine');
+const AWSMCPQuestionGenerator = require('./aws-mcp-integration');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Initialize AI, Analytics, Course Engine, and Question Generator
+// Initialize AI, Analytics, Course Engine, Question Generator, and AWS MCP
 const aiGenerator = new AIQuestionGenerator();
 const analytics = new AdvancedAnalytics();
 const courseEngine = new CourseRecommendationEngine();
 const questionGenerator = new QuestionGenerator();
+const awsMCPGenerator = new AWSMCPQuestionGenerator();
 
 // Email configuration
 const transporter = nodemailer.createTransport({
@@ -289,6 +291,78 @@ app.post('/api/questions/contribute', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to add question' });
+  }
+});
+
+// AWS MCP Integration - Generate 500+ Questions
+app.post('/api/questions/generate-bulk', async (req, res) => {
+  try {
+    const { count = 500, services = [] } = req.body;
+    
+    console.log(`Starting bulk question generation: ${count} questions`);
+    
+    // Initialize AWS MCP connection
+    await awsMCPGenerator.initialize();
+    
+    // Generate questions using AWS MCP server
+    const generatedQuestions = await awsMCPGenerator.generateBulkQuestions(count);
+    
+    // Save to database
+    await awsMCPGenerator.saveQuestionsToDatabase(generatedQuestions);
+    
+    res.json({
+      message: 'Bulk question generation completed',
+      generated_count: generatedQuestions.length,
+      target_count: count,
+      questions_by_domain: generatedQuestions.reduce((acc, q) => {
+        acc[q.domain] = (acc[q.domain] || 0) + 1;
+        return acc;
+      }, {}),
+      questions_by_difficulty: generatedQuestions.reduce((acc, q) => {
+        acc[q.difficulty] = (acc[q.difficulty] || 0) + 1;
+        return acc;
+      }, {}),
+      generated_at: new Date()
+    });
+  } catch (error) {
+    console.error('Bulk question generation failed:', error);
+    res.status(500).json({ 
+      message: 'Bulk question generation failed',
+      error: error.message 
+    });
+  }
+});
+
+// Generate questions for specific AWS service
+app.post('/api/questions/generate-service', async (req, res) => {
+  try {
+    const { serviceName, questionTypes = ['basic_concepts', 'security', 'best_practices'] } = req.body;
+    
+    await awsMCPGenerator.initialize();
+    const serviceQuestions = await awsMCPGenerator.generateServiceQuestions(serviceName);
+    
+    res.json({
+      service: serviceName,
+      questions: serviceQuestions,
+      count: serviceQuestions.length,
+      types_generated: questionTypes
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Service question generation failed' });
+  }
+});
+
+// Get AWS services available for question generation
+app.get('/api/aws/services', async (req, res) => {
+  try {
+    const services = await awsMCPGenerator.getAWSServices();
+    res.json({
+      services: services,
+      total_services: services.length,
+      estimated_questions: services.length * 7 // 7 question types per service
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get AWS services' });
   }
 });
 
