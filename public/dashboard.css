@@ -95,9 +95,31 @@
 
 .hero-subtitle {
     font-size: 1.3rem;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     opacity: 0.9;
     line-height: 1.6;
+}
+
+.unique-value {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.value-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.2);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+}
+
+.value-icon {
+    font-size: 1.2rem;
 }
 
 .hero-actions {
@@ -182,6 +204,51 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 40px;
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 60px;
+}
+
+.comparison-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.comparison-card.highlight {
+    border: 3px solid #667eea;
+    transform: scale(1.02);
+}
+
+.comparison-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.comparison-list {
+    list-style: none;
+    padding: 0;
+}
+
+.comparison-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1rem;
+}
+
+.comparison-list.negative li {
+    color: #dc3545;
+}
+
+.comparison-list.positive li {
+    color: #28a745;
+    font-weight: 500;
 }
 
 .feature-card {

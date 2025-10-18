@@ -439,6 +439,76 @@ function getPerformanceText(percentage) {
   return "🔴 Needs Improvement - Significant learning required";
 }
 
+// Job Market Intelligence API
+app.get('/api/job-market/skills', async (req, res) => {
+  // Simulate real-time job market data
+  const jobMarketData = {
+    trending_skills: [
+      { skill: "Kubernetes Security", demand: 95, salary_impact: "+$15k" },
+      { skill: "DevSecOps Automation", demand: 88, salary_impact: "+$12k" },
+      { skill: "Cloud Security", demand: 92, salary_impact: "+$18k" },
+      { skill: "Infrastructure as Code", demand: 85, salary_impact: "+$10k" }
+    ],
+    job_openings: {
+      total: 2847,
+      remote: 1923,
+      average_salary: "$125,000"
+    },
+    skill_gaps: [
+      "Container Security",
+      "SAST/DAST Integration", 
+      "Compliance Automation"
+    ]
+  };
+  
+  res.json(jobMarketData);
+});
+
+// Career Progression API
+app.get('/api/career/progression/:userId', async (req, res) => {
+  const userId = req.params.userId;
+  
+  // Simulate career progression analysis
+  const progression = {
+    current_level: "Mid-Level DevSecOps",
+    next_level: "Senior DevSecOps Engineer",
+    skills_needed: [
+      { skill: "Advanced Kubernetes", priority: "High", time_estimate: "2 months" },
+      { skill: "Security Architecture", priority: "Medium", time_estimate: "3 months" }
+    ],
+    salary_projection: {
+      current: "$95,000",
+      target: "$135,000",
+      timeline: "6-8 months"
+    },
+    success_probability: 87
+  };
+  
+  res.json(progression);
+});
+
+// Salary Impact Tracker
+app.get('/api/salary/impact', async (req, res) => {
+  const salaryData = {
+    platform_average: "+40%",
+    by_skill: {
+      "Kubernetes": "+$15,000",
+      "DevSecOps": "+$18,000", 
+      "Cloud Security": "+$20,000"
+    },
+    success_stories: [
+      {
+        role: "DevOps Engineer → Senior DevSecOps",
+        increase: "+$25,000",
+        timeline: "4 months",
+        skills_improved: ["Container Security", "CI/CD Security"]
+      }
+    ]
+  };
+  
+  res.json(salaryData);
+});
+
 app.get('/api/progress/:userId', async (req, res) => {
   const user = await User.findById(req.params.userId);
   res.json(user?.progress || {});
