@@ -460,9 +460,80 @@ class DevSecOpsAnalyzer {
             </div>
 
             <div class="next-steps">
-                <h3>📈 Next Steps</h3>
-                <div class="recommendations">
-                    ${this.getRecommendations(result.learningPath, overallScore)}
+                <h3>📈 Your Next Steps</h3>
+                <div class="next-steps-container">
+                    <div class="next-step-item">
+                        <h4>🎯 Immediate Actions</h4>
+                        <div class="action-list">
+                            ${result.learningPath.length > 0 ? 
+                                result.learningPath.slice(0, 2).map(item => `
+                                    <div class="action-item priority-${item.priority.toLowerCase()}">
+                                        <strong>${item.category}</strong> - ${item.priority} Priority
+                                        <div class="course-recommendations">
+                                            ${this.getCourseRecommendations(item.category)}
+                                        </div>
+                                    </div>
+                                `).join('') 
+                                : '<p>Great job! Focus on advanced topics and certifications.</p>'
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="next-step-item">
+                        <h4>📚 Recommended Learning Platforms</h4>
+                        <div class="platform-grid">
+                            <div class="platform-card">
+                                <h5>KodeKloud</h5>
+                                <p>Hands-on DevOps & Cloud labs</p>
+                                <span class="platform-price">$15/month</span>
+                                <a href="https://kodekloud.com/" target="_blank" class="platform-btn">Explore Courses</a>
+                            </div>
+                            <div class="platform-card">
+                                <h5>Udemy</h5>
+                                <p>Comprehensive DevSecOps courses</p>
+                                <span class="platform-price">$49-89/course</span>
+                                <a href="https://www.udemy.com/courses/search/?q=devsecops" target="_blank" class="platform-btn">Browse Courses</a>
+                            </div>
+                            <div class="platform-card">
+                                <h5>Pluralsight</h5>
+                                <p>Advanced skill assessments</p>
+                                <span class="platform-price">$29/month</span>
+                                <a href="https://www.pluralsight.com/browse/information-cyber-security" target="_blank" class="platform-btn">Start Learning</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${overallScore >= 80 ? `
+                    <div class="next-step-item advanced-opportunities">
+                        <h4>🌟 Advanced Opportunities</h4>
+                        <div class="opportunity-grid">
+                            <div class="opportunity-card">
+                                <h5>💼 Start Mentoring</h5>
+                                <p>Share your expertise and earn $50-200/hour</p>
+                                <div class="opportunity-links">
+                                    <a href="https://adplist.org/" target="_blank">ADPList</a>
+                                    <a href="https://mentorcruise.com/" target="_blank">MentorCruise</a>
+                                </div>
+                            </div>
+                            <div class="opportunity-card">
+                                <h5>🔧 Open Source Contribution</h5>
+                                <p>Build your reputation in the DevSecOps community</p>
+                                <div class="opportunity-links">
+                                    <a href="https://github.com/kubernetes/kubernetes" target="_blank">Kubernetes</a>
+                                    <a href="https://owasp.org/projects/" target="_blank">OWASP Projects</a>
+                                </div>
+                            </div>
+                            <div class="opportunity-card">
+                                <h5>🎤 Speaking & Writing</h5>
+                                <p>Share knowledge through conferences and blogs</p>
+                                <div class="opportunity-links">
+                                    <a href="https://www.devsecops.org/" target="_blank">DevSecOps Community</a>
+                                    <a href="https://www.cncf.io/community/" target="_blank">CNCF Community</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -475,28 +546,26 @@ class DevSecOpsAnalyzer {
         return "🔴 Needs Improvement - Significant learning required";
     }
 
-    getRecommendations(learningPath, score) {
-        const recommendations = [];
-        
-        if (score < 50) {
-            recommendations.push("Start with fundamentals - focus on one category at a time");
-            recommendations.push("Consider taking a structured DevSecOps course");
-        } else if (score < 70) {
-            recommendations.push("Practice hands-on labs for weak areas");
-            recommendations.push("Join DevSecOps communities for peer learning");
-        } else {
-            recommendations.push("Explore advanced topics and certifications");
-            recommendations.push("Consider mentoring others or contributing to open source");
-        }
+    getCourseRecommendations(category) {
+        const courseMap = {
+            "CI/CD": [
+                { name: "Complete CI/CD Pipeline using Jenkins", platform: "Udemy", url: "https://www.udemy.com/course/complete-cicd-pipeline-using-jenkins/" },
+                { name: "Kubernetes for Absolute Beginners", platform: "KodeKloud", url: "https://kodekloud.com/courses/kubernetes-for-the-absolute-beginners-hands-on/" }
+            ],
+            "Security": [
+                { name: "DevSecOps: Secure Software Development", platform: "Udemy", url: "https://www.udemy.com/course/devsecops-secure-software-development/" },
+                { name: "Certified Kubernetes Security Specialist", platform: "KodeKloud", url: "https://kodekloud.com/courses/certified-kubernetes-security-specialist-cks/" }
+            ],
+            "Cloud": [
+                { name: "AWS Certified Solutions Architect", platform: "KodeKloud", url: "https://kodekloud.com/courses/aws-certified-solutions-architect-associate/" },
+                { name: "AWS Security Best Practices", platform: "Pluralsight", url: "https://www.pluralsight.com/courses/aws-security-best-practices" }
+            ]
+        };
 
-        if (learningPath.length > 0) {
-            const highPriority = learningPath.filter(item => item.priority === 'High');
-            if (highPriority.length > 0) {
-                recommendations.unshift(`Priority focus: ${highPriority.map(item => item.category).join(', ')}`);
-            }
-        }
-
-        return recommendations.map(rec => `<div class="recommendation-item">• ${rec}</div>`).join('');
+        const courses = courseMap[category] || [];
+        return courses.map(course => 
+            `<a href="${course.url}" target="_blank" class="course-link">${course.name} (${course.platform})</a>`
+        ).join('');
     }
 
     retakeAssessment() {

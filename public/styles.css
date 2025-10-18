@@ -330,6 +330,172 @@ body {
     border-left: 4px solid #007bff;
 }
 
+.next-steps-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.next-step-item {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.next-step-item h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.action-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid #007bff;
+}
+
+.action-item.priority-high {
+    border-left-color: #dc3545;
+    background: #fff5f5;
+}
+
+.action-item.priority-medium {
+    border-left-color: #ffc107;
+    background: #fffbf0;
+}
+
+.course-recommendations {
+    margin-top: 10px;
+}
+
+.course-link {
+    display: inline-block;
+    background: #007bff;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 15px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    margin: 5px 5px 5px 0;
+    transition: background 0.3s ease;
+}
+
+.course-link:hover {
+    background: #0056b3;
+    color: white;
+}
+
+.platform-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.platform-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.platform-card:hover {
+    border-color: #007bff;
+    transform: translateY(-2px);
+}
+
+.platform-card h5 {
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.platform-card p {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.platform-price {
+    display: block;
+    color: #28a745;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.platform-btn {
+    background: #007bff;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background 0.3s ease;
+}
+
+.platform-btn:hover {
+    background: #0056b3;
+    color: white;
+}
+
+.advanced-opportunities {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.advanced-opportunities h4 {
+    color: white;
+}
+
+.opportunity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.opportunity-card {
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.opportunity-card h5 {
+    color: white;
+    margin-bottom: 10px;
+}
+
+.opportunity-card p {
+    color: rgba(255,255,255,0.9);
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.opportunity-links {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.opportunity-links a {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 15px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: background 0.3s ease;
+}
+
+.opportunity-links a:hover {
+    background: rgba(255,255,255,0.3);
+    color: white;
+}
+
 .recommendation-item {
     padding: 8px 0;
     color: #495057;

@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const path = require('path');
 const { awsCertifications, courses } = require('./certifications');
+const { learningPlatforms, certificationPaths, advancedOpportunities } = require('./learning-platforms');
 const AIQuestionGenerator = require('./ai-integration');
 const AdvancedAnalytics = require('./analytics-engine');
 
@@ -622,6 +623,230 @@ app.get('/api/pro/practice/unlimited/:userId', async (req, res) => {
     res.status(500).json({ message: 'Practice generation failed' });
   }
 });
+
+// Enhanced Learning Recommendations API
+app.get('/api/learning/recommendations/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    
+    // Get user's assessment results to determine skill level and weak areas
+    const userLevel = user?.experience || 'beginner';
+    const weakAreas = ['CI/CD', 'Security', 'Cloud']; // This would come from assessment analysis
+    
+    const recommendations = {
+      immediate_courses: [],
+      certification_path: certificationPaths["DevSecOps Engineer"][userLevel] || [],
+      advanced_opportunities: userLevel === 'advanced' ? {
+        mentoring: advancedOpportunities.mentoring,
+        open_source: advancedOpportunities.openSource,
+        communities: advancedOpportunities.communities
+      } : null
+    };
+
+    // Generate course recommendations based on weak areas
+    weakAreas.forEach(area => {
+      if (learningPlatforms[area] && learningPlatforms[area][userLevel]) {
+        recommendations.immediate_courses.push({
+          category: area,
+          courses: learningPlatforms[area][userLevel]
+        });
+      }
+    });
+
+    res.json(recommendations);
+  } catch (error) {
+    console.error('Learning recommendations error:', error);
+    res.status(500).json({ message: 'Failed to generate recommendations' });
+  }
+});
+
+// Platform-specific course search
+app.get('/api/learning/platform/:platform', async (req, res) => {
+  const platform = req.params.platform;
+  const { category, level } = req.query;
+  
+  try {
+    let courses = [];
+    
+    Object.keys(learningPlatforms).forEach(cat => {
+      if (!category || cat === category) {
+        Object.keys(learningPlatforms[cat]).forEach(lvl => {
+          if (!level || lvl === level) {
+            const platformCourses = learningPlatforms[cat][lvl].filter(course => 
+              course.platform.toLowerCase() === platform.toLowerCase()
+            );
+            courses.push(...platformCourses.map(course => ({
+              ...course,
+              category: cat,
+              level: lvl
+            })));
+          }
+        });
+      }
+    });
+
+    res.json({
+      platform: platform,
+      total_courses: courses.length,
+      courses: courses
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Platform search failed' });
+  }
+});
+
+// Career progression with specific next steps
+app.get('/api/career/next-steps/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    
+    // Analyze user's current level and generate specific next steps
+    const currentLevel = user?.experience || 'beginner';
+    const assessmentResults = user?.assessmentResults || {};
+    
+    let nextSteps = [];
+    
+    // Determine skill level from assessment scores
+    const overallScore = calculateOverallScore(assessmentResults);
+    
+    if (overallScore >= 80) {
+      // Advanced user - suggest mentoring and open source
+      nextSteps = [
+        {
+          action: "Start Mentoring",
+          description: "Share your expertise with junior developers",
+          platforms: advancedOpportunities.mentoring,
+          timeframe: "Start this week",
+          impact: "Build leadership skills, earn $50-200/hour"
+        },
+        {
+          action: "Contribute to Open Source",
+          description: "Contribute to major DevSecOps projects",
+          platforms: advancedOpportunities.openSource,
+          timeframe: "1-2 hours/week",
+          impact: "Industry recognition, portfolio building"
+        },
+        {
+          action: "Advanced Certifications",
+          description: "Pursue expert-level certifications",
+          recommendations: certificationPaths["DevSecOps Engineer"]["advanced"],
+          timeframe: "3-6 months",
+          impact: "Senior role qualification, salary increase"
+        }
+      ];
+    } else if (overallScore >= 60) {
+      // Intermediate user - focus on specialization
+      nextSteps = [
+        {
+          action: "Specialize in Weak Areas",
+          description: "Deep dive into your lowest scoring categories",
+          courses: getCoursesForWeakAreas(assessmentResults, 'intermediate'),
+          timeframe: "2-3 months",
+          impact: "Fill critical skill gaps"
+        },
+        {
+          action: "Industry Certifications",
+          description: "Earn recognized certifications",
+          recommendations: certificationPaths["DevSecOps Engineer"]["intermediate"],
+          timeframe: "2-4 months",
+          impact: "Career advancement, 20-30% salary increase"
+        }
+      ];
+    } else {
+      // Beginner user - build foundation
+      nextSteps = [
+        {
+          action: "Build Strong Foundation",
+          description: "Master fundamental DevSecOps concepts",
+          courses: getCoursesForWeakAreas(assessmentResults, 'beginner'),
+          timeframe: "1-2 months",
+          impact: "Solid skill foundation"
+        },
+        {
+          action: "Entry-level Certifications",
+          description: "Start with foundational certifications",
+          recommendations: certificationPaths["DevSecOps Engineer"]["beginner"],
+          timeframe: "1-2 months",
+          impact: "Job readiness, entry-level positions"
+        }
+      ];
+    }
+
+    res.json({
+      current_level: currentLevel,
+      overall_score: overallScore,
+      next_steps: nextSteps,
+      estimated_timeline: getEstimatedTimeline(overallScore),
+      salary_projection: getSalaryProjection(overallScore, currentLevel)
+    });
+  } catch (error) {
+    console.error('Next steps error:', error);
+    res.status(500).json({ message: 'Failed to generate next steps' });
+  }
+});
+
+// Helper functions
+function calculateOverallScore(assessmentResults) {
+  if (!assessmentResults || Object.keys(assessmentResults).length === 0) return 0;
+  
+  let totalCorrect = 0;
+  let totalQuestions = 0;
+  
+  Object.values(assessmentResults).forEach(category => {
+    totalCorrect += category.correct || 0;
+    totalQuestions += category.total || 0;
+  });
+  
+  return totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+}
+
+function getCoursesForWeakAreas(assessmentResults, level) {
+  const weakAreas = [];
+  
+  Object.entries(assessmentResults).forEach(([category, data]) => {
+    const percentage = (data.correct / data.total) * 100;
+    if (percentage < 70) {
+      weakAreas.push(category);
+    }
+  });
+  
+  const courses = [];
+  weakAreas.forEach(area => {
+    if (learningPlatforms[area] && learningPlatforms[area][level]) {
+      courses.push({
+        category: area,
+        courses: learningPlatforms[area][level].slice(0, 2) // Top 2 courses per area
+      });
+    }
+  });
+  
+  return courses;
+}
+
+function getEstimatedTimeline(overallScore) {
+  if (overallScore >= 80) return "Ready for advanced roles now";
+  if (overallScore >= 60) return "3-6 months to senior level";
+  return "6-12 months to job-ready level";
+}
+
+function getSalaryProjection(overallScore, currentLevel) {
+  const baseSalaries = {
+    'beginner': 65000,
+    'intermediate': 85000,
+    'advanced': 120000
+  };
+  
+  const multiplier = overallScore >= 80 ? 1.3 : overallScore >= 60 ? 1.15 : 1.0;
+  const baseSalary = baseSalaries[currentLevel] || baseSalaries['beginner'];
+  
+  return {
+    current_range: `$${Math.round(baseSalary * multiplier / 1000)}k - $${Math.round(baseSalary * multiplier * 1.2 / 1000)}k`,
+    target_range: `$${Math.round(baseSalary * 1.4 / 1000)}k - $${Math.round(baseSalary * 1.6 / 1000)}k`,
+    timeline: getEstimatedTimeline(overallScore)
+  };
+}
 
 // Subscription Management
 app.post('/api/subscription/upgrade', async (req, res) => {
