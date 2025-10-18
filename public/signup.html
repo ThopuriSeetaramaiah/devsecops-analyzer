@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - DevSecOps Skill Gap Analyzer</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="logo">
+                <h1>🛡️ DevSecOps Analyzer</h1>
+                <p>Professional Skill Assessment Platform</p>
+            </div>
+            <nav class="auth-nav">
+                <a href="index.html" class="nav-link">← Back to Home</a>
+                <a href="login.html" class="nav-link">Already have an account? Sign In</a>
+            </nav>
+        </div>
+
+        <div class="auth-form-container">
+            <div class="auth-form">
+                <h2>Create Your Account</h2>
+                <p class="form-subtitle">Join thousands of professionals improving their DevSecOps skills</p>
+
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="firstName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                        <div class="password-requirements">
+                            <small>Password must be at least 8 characters long</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jobTitle">Job Title</label>
+                        <select id="jobTitle" name="jobTitle" required>
+                            <option value="">Select your role</option>
+                            <option value="developer">Software Developer</option>
+                            <option value="devops">DevOps Engineer</option>
+                            <option value="security">Security Engineer</option>
+                            <option value="architect">Solutions Architect</option>
+                            <option value="manager">Engineering Manager</option>
+                            <option value="student">Student</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="experience">Experience Level</label>
+                        <select id="experience" name="experience" required>
+                            <option value="">Select experience</option>
+                            <option value="entry">Entry Level (0-2 years)</option>
+                            <option value="mid">Mid Level (2-5 years)</option>
+                            <option value="senior">Senior Level (5-10 years)</option>
+                            <option value="expert">Expert Level (10+ years)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <span class="checkmark"></span>
+                            I agree to the <a href="#" class="link">Terms of Service</a> and <a href="#" class="link">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="newsletter" name="newsletter">
+                            <span class="checkmark"></span>
+                            Send me updates about new features and learning resources
+                        </label>
+                    </div>
+
+                    <button type="submit" class="auth-btn primary">Create Account</button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="login.html" class="link">Sign in here</a></p>
+                </div>
+            </div>
+
+            <div class="features-panel">
+                <h3>What you'll get:</h3>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <span class="feature-icon">📊</span>
+                        <div>
+                            <h4>Comprehensive Assessment</h4>
+                            <p>Evaluate your DevSecOps skills across CI/CD, Security, and Cloud domains</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🎯</span>
+                        <div>
+                            <h4>Personalized Learning Path</h4>
+                            <p>Get customized course recommendations based on your skill gaps</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📜</span>
+                        <div>
+                            <h4>Certification Practice</h4>
+                            <p>Practice with real AWS and security certification questions</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📧</span>
+                        <div>
+                            <h4>Email Reports</h4>
+                            <p>Receive detailed results and recommendations via email</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📈</span>
+                        <div>
+                            <h4>Progress Tracking</h4>
+                            <p>Monitor your improvement over time with detailed analytics</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>

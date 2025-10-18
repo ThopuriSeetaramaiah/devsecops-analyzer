@@ -33,6 +33,80 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+// Authentication routes
+app.post('/api/auth/signup', async (req, res) => {
+  try {
+    const { firstName, lastName, email, password, jobTitle, experience, newsletter } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists with this email' });
+    }
+    
+    // Create new user
+    const user = new User({
+      name: `${firstName} ${lastName}`,
+      firstName,
+      lastName,
+      email,
+      password, // In production, hash this password
+      jobTitle,
+      experience,
+      newsletter,
+      createdAt: new Date()
+    });
+    
+    await user.save();
+    
+    // Send welcome email
+    await sendWelcomeEmail({ firstName, email });
+    
+    res.status(201).json({
+      message: 'Account created successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        firstName: user.firstName,
+        email: user.email,
+        jobTitle: user.jobTitle,
+        experience: user.experience
+      }
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ message: 'Server error during signup' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user || user.password !== password) { // In production, use proper password hashing
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+    
+    res.json({
+      message: 'Login successful',
+      user: {
+        id: user._id,
+        name: user.name,
+        firstName: user.firstName,
+        email: user.email,
+        jobTitle: user.jobTitle,
+        experience: user.experience
+      },
+      token: 'dummy-token' // In production, use proper JWT
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error during login' });
+  }
+});
+
 // Assessment questions
 const questions = [
   {
@@ -313,6 +387,41 @@ async function sendCertificationResults(userInfo, certName, score, total, percen
     });
   } catch (error) {
     console.error('Email sending failed:', error);
+  }
+}
+
+async function sendWelcomeEmail(userInfo) {
+  const emailHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #667eea;">🛡️ Welcome to DevSecOps Analyzer!</h2>
+      <p>Dear ${userInfo.firstName},</p>
+      <p>Thank you for joining our community of DevSecOps professionals!</p>
+      
+      <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+        <h3>🚀 Get Started:</h3>
+        <ul>
+          <li>Take your first skill assessment</li>
+          <li>Practice with certification questions</li>
+          <li>Get personalized learning recommendations</li>
+          <li>Track your progress over time</li>
+        </ul>
+      </div>
+      
+      <p>Ready to begin your DevSecOps journey? <a href="#" style="color: #667eea;">Take your first assessment</a></p>
+      
+      <p>Best regards,<br>The DevSecOps Analyzer Team</p>
+    </div>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: 'DevSecOps Analyzer <devsecops.analyzer@gmail.com>',
+      to: userInfo.email,
+      subject: '🛡️ Welcome to DevSecOps Analyzer!',
+      html: emailHtml
+    });
+  } catch (error) {
+    console.error('Welcome email failed:', error);
   }
 }
 
