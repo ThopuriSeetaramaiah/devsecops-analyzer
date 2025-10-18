@@ -3,12 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - DevSecOps Skill Gap Analyzer</title>
+    <title>DevSecOps Skill Gap Analyzer</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
-    <div class="dashboard-container">
+    <div class="landing-container">
+        <header class="modern-header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>🛡️ DevSecOps Analyzer</h1>
+                </div>
+                <nav class="main-nav">
+                    <a href="#features" class="nav-link">Features</a>
+                    <a href="#pricing" class="nav-link">Pricing</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <div class="auth-buttons">
+                        <a href="login.html" class="btn-outline">Sign In</a>
+                        <a href="signup.html" class="btn-primary">Get Started</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">Master DevSecOps Skills with AI-Powered Assessment</h1>
+                <p class="hero-subtitle">Identify skill gaps, get personalized learning paths, and practice with real certification questions. Join 10,000+ professionals advancing their DevSecOps careers.</p>
+                
+                <div class="hero-actions">
+                    <a href="signup.html" class="btn-hero-primary">🚀 Start Free Assessment</a>
+                    <button onclick="continueAsGuest()" class="btn-hero-secondary">Try as Guest</button>
+                </div>
+
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">10,000+</div>
+                        <div class="stat-label">Professionals Assessed</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Practice Questions</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">6</div>
+                        <div class="stat-label">Certification Tracks</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <section class="features-section" id="features">
+            <div class="container">
+                <h2 class="section-title">Everything You Need to Excel in DevSecOps</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Comprehensive Assessment</h3>
+                        <p>Evaluate your skills across CI/CD, Security, and Cloud domains with detailed analytics</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Personalized Learning</h3>
+                        <p>Get customized course recommendations based on your specific skill gaps</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📜</div>
+                        <h3>Certification Practice</h3>
+                        <p>Practice with real AWS and security certification questions with explanations</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📧</div>
+                        <h3>Email Reports</h3>
+                        <p>Receive detailed results and learning recommendations directly in your inbox</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📈</div>
+                        <h3>Progress Tracking</h3>
+                        <p>Monitor your improvement over time with detailed progress analytics</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏆</div>
+                        <h3>Industry Recognition</h3>
+                        <p>Build skills that are recognized by top tech companies and employers</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Ready to Advance Your DevSecOps Career?</h2>
+                    <p>Join thousands of professionals who have improved their skills with our platform</p>
+                    <div class="cta-actions">
+                        <a href="signup.html" class="btn-cta-primary">Start Your Assessment</a>
+                        <button onclick="showUserDashboard()" class="btn-cta-secondary">View Dashboard</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- User Dashboard (Hidden by default) -->
+    <div class="dashboard-container" id="userDashboard" style="display: none;">
         <header class="dashboard-header">
             <div class="header-left">
                 <h1>🛡️ DevSecOps Analyzer</h1>
@@ -27,7 +125,7 @@
                     <div class="user-dropdown" id="userDropdown">
                         <a href="#" onclick="editProfile()">Edit Profile</a>
                         <a href="#" onclick="viewSettings()">Settings</a>
-                        <a href="main.html">Back to Main Site</a>
+                        <a href="#" onclick="showLandingPage()">Back to Home</a>
                         <hr>
                         <a href="#" onclick="logout()">Sign Out</a>
                     </div>
@@ -36,7 +134,7 @@
         </header>
 
         <main class="dashboard-main">
-            <!-- Overview Tab -->
+            <!-- Dashboard content remains the same -->
             <div id="overview-tab" class="dashboard-tab active">
                 <div class="dashboard-grid">
                     <div class="stats-card">
@@ -112,29 +210,23 @@
                 </div>
             </div>
 
-            <!-- Assessments Tab -->
+            <!-- Other dashboard tabs remain the same -->
             <div id="assessments-tab" class="dashboard-tab">
                 <div class="tab-header">
                     <h2>📝 Skill Assessments</h2>
                     <button class="primary-btn" onclick="startNewAssessment()">Take New Assessment</button>
                 </div>
-                <div id="assessmentsList">
-                    <!-- Assessment history will be loaded here -->
-                </div>
+                <div id="assessmentsList"></div>
             </div>
 
-            <!-- Certifications Tab -->
             <div id="certifications-tab" class="dashboard-tab">
                 <div class="tab-header">
                     <h2>📜 Certification Practice</h2>
                     <button class="primary-btn" onclick="browseCertifications()">Browse All Certifications</button>
                 </div>
-                <div id="certificationsList">
-                    <!-- Certification progress will be loaded here -->
-                </div>
+                <div id="certificationsList"></div>
             </div>
 
-            <!-- Progress Tab -->
             <div id="progress-tab" class="dashboard-tab">
                 <div class="tab-header">
                     <h2>📈 Your Progress</h2>
@@ -142,7 +234,6 @@
                 <div class="progress-section">
                     <h3>Skill Development Over Time</h3>
                     <div class="progress-chart" id="progressChart">
-                        <!-- Progress visualization will be added here -->
                         <div class="chart-placeholder">
                             <p>📊 Progress charts coming soon!</p>
                             <p>Take more assessments to see your improvement over time.</p>

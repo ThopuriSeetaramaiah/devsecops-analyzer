@@ -5,47 +5,43 @@ class Dashboard {
     }
 
     init() {
-        this.checkAuth();
-        this.loadUserData();
+        this.checkAuthAndShowContent();
         this.bindEvents();
-        this.loadDashboardData();
     }
 
-    checkAuth() {
+    checkAuthAndShowContent() {
         const user = localStorage.getItem('user');
         const guestMode = localStorage.getItem('guestMode');
         
-        if (!user && !guestMode) {
-            // Show login options instead of redirecting
-            this.showLoginPrompt();
-            return;
-        }
-        
-        if (user) {
-            this.user = JSON.parse(user);
-            document.getElementById('userName').textContent = this.user.firstName || this.user.name || 'User';
+        if (user || guestMode) {
+            // User is authenticated, show dashboard
+            this.showUserDashboard();
+            if (user) {
+                this.user = JSON.parse(user);
+                document.getElementById('userName').textContent = this.user.firstName || this.user.name || 'User';
+            } else {
+                document.getElementById('userName').textContent = 'Guest';
+            }
+            this.loadDashboardData();
         } else {
-            document.getElementById('userName').textContent = 'Guest';
+            // Show landing page
+            this.showLandingPage();
         }
     }
 
-    showLoginPrompt() {
-        document.querySelector('.dashboard-main').innerHTML = `
-            <div class="login-prompt">
-                <div class="prompt-card">
-                    <h2>🛡️ Welcome to DevSecOps Analyzer</h2>
-                    <p>Sign in to access your personalized dashboard and track your progress</p>
-                    <div class="prompt-actions">
-                        <a href="signup.html" class="prompt-btn primary">🚀 Create Account</a>
-                        <a href="login.html" class="prompt-btn secondary">Sign In</a>
-                        <button onclick="continueAsGuest()" class="prompt-btn tertiary">Continue as Guest</button>
-                    </div>
-                </div>
-            </div>
-        `;
+    showLandingPage() {
+        document.querySelector('.landing-container').style.display = 'block';
+        document.getElementById('userDashboard').style.display = 'none';
+    }
+
+    showUserDashboard() {
+        document.querySelector('.landing-container').style.display = 'none';
+        document.getElementById('userDashboard').style.display = 'block';
     }
 
     loadUserData() {
+        if (!this.user && !localStorage.getItem('guestMode')) return;
+        
         // Load user-specific data from localStorage or API
         const assessmentHistory = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
         const certificationHistory = JSON.parse(localStorage.getItem('certificationHistory') || '[]');
@@ -76,7 +72,10 @@ class Dashboard {
     }
 
     async loadDashboardData() {
+        if (!document.getElementById('userDashboard') || document.getElementById('userDashboard').style.display === 'none') return;
+        
         // Load recent activity, progress data, etc.
+        this.loadUserData();
         this.loadRecentActivity();
         this.loadAssessmentsList();
         this.loadCertificationsList();
@@ -221,6 +220,26 @@ function browseCertifications() {
 function continueAsGuest() {
     localStorage.setItem('guestMode', 'true');
     location.reload();
+}
+
+function showUserDashboard() {
+    const user = localStorage.getItem('user');
+    const guestMode = localStorage.getItem('guestMode');
+    
+    if (user || guestMode) {
+        document.querySelector('.landing-container').style.display = 'none';
+        document.getElementById('userDashboard').style.display = 'block';
+        // Reload dashboard data
+        const dashboard = new Dashboard();
+        dashboard.loadDashboardData();
+    } else {
+        window.location.href = 'signup.html';
+    }
+}
+
+function showLandingPage() {
+    document.querySelector('.landing-container').style.display = 'block';
+    document.getElementById('userDashboard').style.display = 'none';
 }
 
 function viewLearningPath() {
