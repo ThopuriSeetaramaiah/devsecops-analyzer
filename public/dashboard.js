@@ -90,7 +90,7 @@ class Dashboard {
                 <div class="activity-item">
                     <div class="activity-icon">🚀</div>
                     <div class="activity-content">
-                        <h4>Welcome to DevSecOps Analyzer!</h4>
+                        <h4>Welcome to SkillForge!</h4>
                         <p>Take your first assessment to get started</p>
                         <span class="activity-time">Just now</span>
                     </div>
@@ -130,7 +130,7 @@ class Dashboard {
         container.innerHTML = assessments.map((assessment, index) => `
             <div class="assessment-card">
                 <div class="assessment-header">
-                    <h4>DevSecOps Assessment #${index + 1}</h4>
+                    <h4>Tech Skills Assessment #${index + 1}</h4>
                     <span class="assessment-score ${this.getScoreClass(assessment.percentage)}">${assessment.percentage}%</span>
                 </div>
                 <div class="assessment-details">

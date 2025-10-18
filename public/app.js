@@ -1,4 +1,4 @@
-class DevSecOpsAnalyzer {
+class SkillForge {
     constructor() {
         this.questions = [];
         this.answers = [];
@@ -391,7 +391,7 @@ class DevSecOpsAnalyzer {
         const recentActivity = JSON.parse(localStorage.getItem('recentActivity') || '[]');
         recentActivity.unshift({
             icon: '📝',
-            title: 'DevSecOps Assessment Completed',
+            title: 'Tech Skills Assessment Completed',
             description: `Score: ${assessmentData.percentage}% - ${this.getPerformanceText(assessmentData.percentage)}`,
             time: 'Just now'
         });
@@ -547,7 +547,7 @@ class DevSecOpsAnalyzer {
     }
 
     getPerformanceLevel(score) {
-        if (score >= 80) return "🌟 Excellent - You're DevSecOps ready!";
+        if (score >= 80) return "🌟 Excellent - You're job ready!";
         if (score >= 70) return "✅ Good - Minor improvements needed";
         if (score >= 50) return "⚠️ Average - Focus on key areas";
         return "🔴 Needs Improvement - Significant learning required";
@@ -627,5 +627,5 @@ function showTab(tabId) {
 // Initialize the app when DOM is loaded
 let app;
 document.addEventListener('DOMContentLoaded', () => {
-    app = new DevSecOpsAnalyzer();
+    app = new SkillForge();
 });

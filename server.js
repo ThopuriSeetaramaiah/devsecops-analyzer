@@ -11,18 +11,20 @@ const CourseRecommendationEngine = require('./course-scraper');
 const AIQuestionGenerator = require('./ai-integration');
 const AdvancedAnalytics = require('./analytics-engine');
 const AWSMCPQuestionGenerator = require('./aws-mcp-integration');
+const RealMCPQuestionGenerator = require('./real-mcp-integration');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Initialize AI, Analytics, Course Engine, Question Generator, and AWS MCP
+// Initialize all generators
 const aiGenerator = new AIQuestionGenerator();
 const analytics = new AdvancedAnalytics();
 const courseEngine = new CourseRecommendationEngine();
 const questionGenerator = new QuestionGenerator();
 const awsMCPGenerator = new AWSMCPQuestionGenerator();
+const realMCPGenerator = new RealMCPQuestionGenerator();
 
 // Email configuration
 const transporter = nodemailer.createTransport({
@@ -204,29 +206,39 @@ const questions = [
   }
 ];
 
-// Comprehensive Question Database API
-app.get('/api/questions/:examType', (req, res) => {
+// Real Dynamic Question Generation API - MUST come before :examType route
+app.get('/api/questions/dynamic', (req, res) => {
   try {
-    const { examType } = req.params;
-    const { count = 10, difficulty = 'mixed', userId = 'guest' } = req.query;
+    const { services = ['EC2', 'S3', 'Lambda'], count = 10, difficulty = 'mixed', userId = 'guest' } = req.query;
     
-    const questions = questionGenerator.generateExamQuestions(
-      examType, 
-      parseInt(count), 
-      difficulty, 
-      userId
-    );
+    const serviceArray = Array.isArray(services) ? services : services.split(',');
+    const questions = realMCPGenerator.generateMultipleQuestions(serviceArray, parseInt(count), difficulty);
     
     res.json({
-      examType,
       questions,
-      totalAvailable: questionGenerator.questionBank[examType]?.length || 0,
+      generated_count: questions.length,
+      services_used: serviceArray,
       difficulty,
+      truly_dynamic: true,
       generated_at: new Date()
     });
   } catch (error) {
-    console.error('Question generation error:', error);
-    res.status(500).json({ message: 'Failed to generate questions' });
+    console.error('Dynamic question generation error:', error);
+    res.status(500).json({ message: 'Failed to generate dynamic questions' });
+  }
+});
+
+// Question database statistics
+app.get('/api/questions/stats', (req, res) => {
+  try {
+    const stats = questionGenerator.getQuestionStats();
+    res.json({
+      statistics: stats,
+      total_questions: Object.values(stats).reduce((sum, exam) => sum + exam.total, 0),
+      available_exams: Object.keys(stats)
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get question statistics' });
   }
 });
 
@@ -249,17 +261,29 @@ app.get('/api/questions/role/:roleName', (req, res) => {
   }
 });
 
-// Question database statistics
-app.get('/api/questions/stats', (req, res) => {
+// Comprehensive Question Database API - MUST come after specific routes
+app.get('/api/questions/:examType', (req, res) => {
   try {
-    const stats = questionGenerator.getQuestionStats();
+    const { examType } = req.params;
+    const { count = 10, difficulty = 'mixed', userId = 'guest' } = req.query;
+    
+    const questions = questionGenerator.generateExamQuestions(
+      examType, 
+      parseInt(count), 
+      difficulty, 
+      userId
+    );
+    
     res.json({
-      statistics: stats,
-      total_questions: Object.values(stats).reduce((sum, exam) => sum + exam.total, 0),
-      available_exams: Object.keys(stats)
+      examType,
+      questions,
+      totalAvailable: questionGenerator.questionBank[examType]?.length || 0,
+      difficulty,
+      generated_at: new Date()
     });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to get question statistics' });
+    console.error('Question generation error:', error);
+    res.status(500).json({ message: 'Failed to generate questions' });
   }
 });
 
@@ -383,14 +407,34 @@ app.post('/api/questions/reset-history', (req, res) => {
   }
 });
 
-// Legacy API for backward compatibility
+// Legacy API for backward compatibility - Now with REAL dynamic questions
 app.get('/api/assessment', (req, res) => {
   const { userId = 'guest', difficulty = 'mixed' } = req.query;
   
-  // Use comprehensive question generator for DevSecOps questions
-  const questions = questionGenerator.generateRoleBasedQuestions('DevSecOps Engineer', 10);
+  // Use REAL MCP generator for truly dynamic questions
+  const services = ['EC2', 'S3', 'Lambda', 'RDS', 'VPC'];
+  const dynamicQuestions = realMCPGenerator.generateMultipleQuestions(services, 10, difficulty);
   
-  res.json(questions);
+  res.json(dynamicQuestions);
+});
+
+// Remove duplicate dynamic route
+// Real Dynamic Question Generation API
+// app.get('/api/questions/dynamic', (req, res) => {
+//   ... (removed duplicate)
+// });
+
+// Reset question combinations for fresh questions
+app.post('/api/questions/reset-combinations', (req, res) => {
+  try {
+    realMCPGenerator.resetUsedCombinations();
+    res.json({ 
+      message: 'Question combinations reset successfully',
+      status: 'Fresh questions available'
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to reset combinations' });
+  }
 });
 
 // Smart Course Recommendations with Cost Analysis

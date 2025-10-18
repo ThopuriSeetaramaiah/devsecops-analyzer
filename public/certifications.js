@@ -45,7 +45,7 @@ class CertificationPractice {
             'AWS-Security': 'AWS Security Specialty',
             'CISSP': 'CISSP',
             'CKA': 'Certified Kubernetes Administrator',
-            'DevSecOps': 'DevSecOps Engineer'
+            'DevSecOps': 'Tech Professional'
         };
         
         document.getElementById('practiceTitle').textContent = examNames[examType] + ' Practice';
