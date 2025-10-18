@@ -252,11 +252,18 @@ class DevSecOpsAnalyzer {
 
     async loadQuestions() {
         try {
-            const response = await fetch('/api/assessment');
+            // Load dynamic questions that avoid repeats
+            const userId = this.getUserId();
+            const response = await fetch(`/api/assessment?userId=${userId}&difficulty=mixed`);
             this.questions = await response.json();
         } catch (error) {
             console.error('Failed to load questions:', error);
         }
+    }
+
+    getUserId() {
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        return user?.id || 'guest_' + Date.now();
     }
 
     startAssessment() {
@@ -547,25 +554,30 @@ class DevSecOpsAnalyzer {
     }
 
     getCourseRecommendations(category) {
-        const courseMap = {
-            "CI/CD": [
-                { name: "Complete CI/CD Pipeline using Jenkins", platform: "Udemy", url: "https://www.udemy.com/course/complete-cicd-pipeline-using-jenkins/" },
-                { name: "Kubernetes for Absolute Beginners", platform: "KodeKloud", url: "https://kodekloud.com/courses/kubernetes-for-the-absolute-beginners-hands-on/" }
-            ],
-            "Security": [
-                { name: "DevSecOps: Secure Software Development", platform: "Udemy", url: "https://www.udemy.com/course/devsecops-secure-software-development/" },
-                { name: "Certified Kubernetes Security Specialist", platform: "KodeKloud", url: "https://kodekloud.com/courses/certified-kubernetes-security-specialist-cks/" }
-            ],
-            "Cloud": [
-                { name: "AWS Certified Solutions Architect", platform: "KodeKloud", url: "https://kodekloud.com/courses/aws-certified-solutions-architect-associate/" },
-                { name: "AWS Security Best Practices", platform: "Pluralsight", url: "https://www.pluralsight.com/courses/aws-security-best-practices" }
-            ]
-        };
-
-        const courses = courseMap[category] || [];
-        return courses.map(course => 
-            `<a href="${course.url}" target="_blank" class="course-link">${course.name} (${course.platform})</a>`
-        ).join('');
+        // This will be replaced with real API call to course recommendation engine
+        return `<div class="course-loading">Loading best courses for ${category}...</div>
+                <script>
+                    setTimeout(() => {
+                        fetch('/api/courses/compare/${category}?budget=100&level=intermediate')
+                        .then(response => response.json())
+                        .then(data => {
+                            const container = document.querySelector('.course-loading');
+                            if (container) {
+                                container.innerHTML = data.comparison.best_value.map(course => 
+                                    \`<div class="course-rec">
+                                        <strong>\${course.title}</strong> - \${course.platform}
+                                        <div class="course-details">
+                                            <span class="price">$\${course.price}</span>
+                                            <span class="rating">⭐ \${course.rating}</span>
+                                            <span class="duration">\${course.duration}</span>
+                                        </div>
+                                        <a href="\${course.url}" target="_blank" class="course-link">View Course</a>
+                                    </div>\`
+                                ).join('');
+                            }
+                        });
+                    }, 1000);
+                </script>`;
     }
 
     retakeAssessment() {

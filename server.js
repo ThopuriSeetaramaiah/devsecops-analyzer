@@ -5,6 +5,8 @@ const nodemailer = require('nodemailer');
 const path = require('path');
 const { awsCertifications, courses } = require('./certifications');
 const { learningPlatforms, certificationPaths, advancedOpportunities } = require('./learning-platforms');
+const { generateDynamicQuestions } = require('./dynamic-questions');
+const CourseRecommendationEngine = require('./course-scraper');
 const AIQuestionGenerator = require('./ai-integration');
 const AdvancedAnalytics = require('./analytics-engine');
 
@@ -13,9 +15,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Initialize AI and Analytics
+// Initialize AI, Analytics, and Course Engine
 const aiGenerator = new AIQuestionGenerator();
 const analytics = new AdvancedAnalytics();
+const courseEngine = new CourseRecommendationEngine();
 
 // Email configuration
 const transporter = nodemailer.createTransport({
@@ -197,9 +200,74 @@ const questions = [
   }
 ];
 
-// Routes
+// Dynamic Questions API - Never Same Questions
 app.get('/api/assessment', (req, res) => {
-  res.json(questions);
+  const { userId, difficulty = 'mixed' } = req.query;
+  
+  // Get user's question history to avoid repeats
+  const userHistory = []; // Would fetch from database in production
+  
+  // Generate dynamic questions
+  const dynamicQuestions = generateDynamicQuestions(userHistory, difficulty, 10);
+  
+  res.json(dynamicQuestions);
+});
+
+// Smart Course Recommendations with Cost Analysis
+app.post('/api/courses/recommend', async (req, res) => {
+  try {
+    const { userId, skillGaps, budget = 100, timeframe = 3, userLevel = 'intermediate' } = req.body;
+    
+    // Get smart course recommendations
+    const recommendations = courseEngine.recommendCourses(skillGaps, userLevel, budget, timeframe);
+    
+    res.json({
+      recommendations: recommendations.recommendations,
+      cost_analysis: {
+        total_cost: recommendations.totalCost,
+        budget_analysis: recommendations.budgetAnalysis,
+        platform_comparison: recommendations.platformComparison
+      },
+      time_estimate: recommendations.timeEstimate,
+      generated_at: new Date()
+    });
+  } catch (error) {
+    console.error('Course recommendation error:', error);
+    res.status(500).json({ message: 'Course recommendation failed' });
+  }
+});
+
+// Real-time Course Price Comparison
+app.get('/api/courses/compare/:skill', async (req, res) => {
+  try {
+    const skill = req.params.skill;
+    const { budget, level } = req.query;
+    
+    // Get all courses for this skill
+    const skillCourses = courseEngine.courseDatabase[skill] || [];
+    
+    // Sort by different criteria
+    const comparison = {
+      cheapest: skillCourses.sort((a, b) => a.price - b.price).slice(0, 3),
+      highest_rated: skillCourses.sort((a, b) => b.rating - a.rating).slice(0, 3),
+      best_value: skillCourses.sort((a, b) => courseEngine.calculateValueScore(b) - courseEngine.calculateValueScore(a)).slice(0, 3),
+      most_popular: skillCourses.sort((a, b) => b.students - a.students).slice(0, 3)
+    };
+    
+    res.json({
+      skill: skill,
+      total_courses: skillCourses.length,
+      price_range: {
+        min: Math.min(...skillCourses.map(c => c.price)),
+        max: Math.max(...skillCourses.map(c => c.price)),
+        avg: skillCourses.reduce((sum, c) => sum + c.price, 0) / skillCourses.length
+      },
+      comparison: comparison,
+      budget_friendly: budget ? skillCourses.filter(c => c.price <= budget) : []
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Course comparison failed' });
+  }
 });
 
 app.get('/api/certifications', (req, res) => {
