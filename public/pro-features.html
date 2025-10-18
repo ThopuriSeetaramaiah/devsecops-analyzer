@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Features - DevSecOps Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="pro-container">
+        <header class="pro-header">
+            <div class="header-content">
+                <h1>🚀 Pro Features</h1>
+                <p>Advanced AI-powered analytics and unlimited practice</p>
+                <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+            </div>
+        </header>
+
+        <main class="pro-main">
+            <section class="analytics-section">
+                <h2>📊 Advanced Analytics Dashboard</h2>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Performance Trends</h3>
+                        <div id="performanceChart" class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card">
+                        <h3>Industry Benchmarking</h3>
+                        <div id="benchmarkData">
+                            <div class="benchmark-item">
+                                <span class="benchmark-label">Industry Percentile</span>
+                                <span class="benchmark-value" id="industryPercentile">Loading...</span>
+                            </div>
+                            <div class="benchmark-item">
+                                <span class="benchmark-label">Peer Comparison</span>
+                                <span class="benchmark-value" id="peerComparison">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <h3>Predictive Insights</h3>
+                        <div id="predictions">
+                            <div class="prediction-item">
+                                <span class="prediction-label">Certification Success</span>
+                                <div class="prediction-bar">
+                                    <div class="prediction-fill" id="certPrediction"></div>
+                                </div>
+                            </div>
+                            <div class="prediction-item">
+                                <span class="prediction-label">Interview Readiness</span>
+                                <div class="prediction-bar">
+                                    <div class="prediction-fill" id="interviewPrediction"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="ai-questions-section">
+                <h2>🤖 AI-Generated Questions</h2>
+                <div class="ai-controls">
+                    <div class="control-group">
+                        <label>Focus Areas:</label>
+                        <select id="focusAreas" multiple>
+                            <option value="CI/CD">CI/CD Pipeline Security</option>
+                            <option value="Container">Container Security</option>
+                            <option value="Cloud">Cloud Security</option>
+                            <option value="Kubernetes">Kubernetes Security</option>
+                            <option value="Compliance">Compliance & Governance</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Difficulty:</label>
+                        <select id="difficulty">
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate" selected>Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                            <option value="expert">Expert</option>
+                        </select>
+                    </div>
+                    
+                    <button id="generateQuestions" class="btn-primary">Generate AI Questions</button>
+                </div>
+                
+                <div id="aiQuestions" class="questions-container"></div>
+            </section>
+
+            <section class="trending-section">
+                <h2>🔥 Latest Industry Questions</h2>
+                <p>Questions based on 2024-2025 industry trends and technologies</p>
+                <button id="loadTrending" class="btn-secondary">Load Trending Questions</button>
+                <div id="trendingQuestions" class="questions-container"></div>
+            </section>
+
+            <section class="unlimited-practice">
+                <h2>♾️ Unlimited Practice Mode</h2>
+                <div class="practice-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="practiceCount">0</span>
+                        <span class="stat-label">Questions Practiced Today</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="accuracyRate">0%</span>
+                        <span class="stat-label">Accuracy Rate</span>
+                    </div>
+                </div>
+                <button id="startUnlimitedPractice" class="btn-hero-primary">Start Unlimited Practice</button>
+            </section>
+        </main>
+    </div>
+
+    <script src="pro-features.js"></script>
+</body>
+</html>

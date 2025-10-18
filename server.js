@@ -4,11 +4,17 @@ const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const path = require('path');
 const { awsCertifications, courses } = require('./certifications');
+const AIQuestionGenerator = require('./ai-integration');
+const AdvancedAnalytics = require('./analytics-engine');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+// Initialize AI and Analytics
+const aiGenerator = new AIQuestionGenerator();
+const analytics = new AdvancedAnalytics();
 
 // Email configuration
 const transporter = nodemailer.createTransport({
@@ -32,6 +38,8 @@ const userSchema = new mongoose.Schema({
   jobTitle: String,
   experience: String,
   newsletter: Boolean,
+  subscription: { type: String, default: 'free' }, // free, pro, enterprise
+  subscriptionDate: Date,
   assessmentResults: Object,
   learningPath: Array,
   progress: Object,
@@ -487,26 +495,158 @@ app.get('/api/career/progression/:userId', async (req, res) => {
   res.json(progression);
 });
 
-// Salary Impact Tracker
-app.get('/api/salary/impact', async (req, res) => {
-  const salaryData = {
-    platform_average: "+40%",
-    by_skill: {
-      "Kubernetes": "+$15,000",
-      "DevSecOps": "+$18,000", 
-      "Cloud Security": "+$20,000"
-    },
-    success_stories: [
-      {
-        role: "DevOps Engineer → Senior DevSecOps",
-        increase: "+$25,000",
-        timeline: "4 months",
-        skills_improved: ["Container Security", "CI/CD Security"]
-      }
-    ]
-  };
-  
-  res.json(salaryData);
+// Pro Features - Advanced Analytics & AI
+app.get('/api/pro/analytics/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    
+    if (!user || user.subscription !== 'pro') {
+      return res.status(403).json({ message: 'Pro subscription required' });
+    }
+
+    const analyticsData = analytics.generateUserAnalytics(userId);
+    const benchmarkData = analytics.generateBenchmarkAnalysis(userId);
+    const predictiveData = analytics.generatePredictiveInsights(userId);
+
+    res.json({
+      analytics: analyticsData,
+      benchmarks: benchmarkData,
+      predictions: predictiveData,
+      generated_at: new Date()
+    });
+  } catch (error) {
+    console.error('Analytics error:', error);
+    res.status(500).json({ message: 'Analytics generation failed' });
+  }
+});
+
+// AI-Generated Dynamic Questions
+app.post('/api/pro/questions/generate', async (req, res) => {
+  try {
+    const { userId, weakAreas, difficulty, count = 5 } = req.body;
+    const user = await User.findById(userId);
+    
+    if (!user || user.subscription !== 'pro') {
+      return res.status(403).json({ message: 'Pro subscription required' });
+    }
+
+    const userProfile = {
+      experience: user.experience,
+      jobTitle: user.jobTitle,
+      weakAreas: weakAreas
+    };
+
+    const aiQuestions = await aiGenerator.generateQuestions(userProfile, weakAreas, difficulty);
+    
+    // Track question generation for analytics
+    analytics.trackUserBehavior(userId, 'ai_questions_generated', {
+      count: aiQuestions.length,
+      difficulty,
+      weakAreas,
+      sessionId: req.headers['session-id']
+    });
+
+    res.json({
+      questions: aiQuestions,
+      generated_by: 'AI',
+      personalized: true,
+      difficulty_level: difficulty
+    });
+  } catch (error) {
+    console.error('AI Question generation error:', error);
+    res.status(500).json({ message: 'Question generation failed' });
+  }
+});
+
+// Latest Industry Questions
+app.get('/api/pro/questions/trending', async (req, res) => {
+  try {
+    const trendingQuestions = await aiGenerator.generateTrendingQuestions();
+    
+    res.json({
+      questions: trendingQuestions,
+      category: 'Industry Trends 2024-2025',
+      updated: new Date(),
+      technologies: ['AI/ML Security', 'Quantum Computing', 'Platform Engineering']
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Trending questions unavailable' });
+  }
+});
+
+// Real-time Performance Tracking
+app.post('/api/pro/track', async (req, res) => {
+  try {
+    const { userId, action, data } = req.body;
+    
+    analytics.trackUserBehavior(userId, action, {
+      ...data,
+      sessionId: req.headers['session-id'],
+      timestamp: new Date()
+    });
+
+    res.json({ tracked: true });
+  } catch (error) {
+    res.status(500).json({ message: 'Tracking failed' });
+  }
+});
+
+// Unlimited Practice Mode
+app.get('/api/pro/practice/unlimited/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    
+    if (!user || user.subscription !== 'pro') {
+      return res.status(403).json({ message: 'Pro subscription required' });
+    }
+
+    // Generate unlimited practice questions based on user's weak areas
+    const userAnalytics = analytics.generateUserAnalytics(userId);
+    const weakAreas = userAnalytics.weakness_patterns || ['CI/CD', 'Security'];
+    
+    const practiceQuestions = await aiGenerator.generateQuestions(
+      { experience: user.experience, jobTitle: user.jobTitle },
+      weakAreas,
+      'mixed'
+    );
+
+    res.json({
+      questions: practiceQuestions,
+      unlimited: true,
+      personalized: true,
+      focus_areas: weakAreas
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Practice generation failed' });
+  }
+});
+
+// Subscription Management
+app.post('/api/subscription/upgrade', async (req, res) => {
+  try {
+    const { userId, plan } = req.body;
+    
+    await User.findByIdAndUpdate(userId, { 
+      subscription: plan,
+      subscriptionDate: new Date()
+    });
+
+    res.json({ 
+      message: 'Subscription upgraded successfully',
+      plan: plan,
+      features: plan === 'pro' ? [
+        'Advanced Analytics',
+        'AI-Generated Questions', 
+        'Unlimited Practice',
+        'Industry Benchmarking',
+        'Predictive Insights'
+      ] : ['Basic Assessment']
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Subscription upgrade failed' });
+  }
 });
 
 app.get('/api/progress/:userId', async (req, res) => {
