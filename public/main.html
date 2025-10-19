@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillForge - Forge Your Tech Career</title>
+    <title>SkillCompass - Forge Your Tech Career</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🛡️ SkillForge - Forge Your Tech Career</h1>
+            <h1>🛡️ SkillCompass - Forge Your Tech Career</h1>
             <p>Identify your skill gaps and get a personalized learning path to become job ready</p>
             <div class="header-actions">
                 <a href="dashboard.html" class="header-btn secondary">← Back to Home</a>
@@ -45,6 +45,9 @@
         <div id="assessment" class="section" style="display: none;">
             <h2>📝 Tech Skills Assessment</h2>
             <p>Answer all questions to get your personalized learning path. Take your time and choose the best answer.</p>
+            <div class="assessment-controls">
+                <button id="resetQuestionsBtn" class="btn btn-secondary">🔄 Get Fresh Questions</button>
+            </div>
             <div id="questionsContainer"></div>
             <button id="submitBtn" class="btn">✅ Submit Assessment</button>
         </div>

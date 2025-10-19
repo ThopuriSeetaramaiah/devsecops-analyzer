@@ -262,23 +262,52 @@ app.get('/api/questions/role/:roleName', (req, res) => {
 });
 
 // Comprehensive Question Database API - MUST come after specific routes
+// User question tracking
+const userQuestionHistory = new Map();
+
 app.get('/api/questions/:examType', (req, res) => {
   try {
     const { examType } = req.params;
     const { count = 10, difficulty = 'mixed', userId = 'guest' } = req.query;
     
-    const questions = questionGenerator.generateExamQuestions(
+    // Get user's question history
+    const userKey = `${userId}_${examType}`;
+    let usedQuestions = userQuestionHistory.get(userKey) || new Set();
+    
+    // Generate questions avoiding used ones
+    const allQuestions = questionGenerator.generateExamQuestions(
       examType, 
-      parseInt(count), 
+      parseInt(count) * 3, // Get more to filter from
       difficulty, 
       userId
     );
     
+    // Filter out used questions
+    const freshQuestions = allQuestions.filter(q => 
+      !usedQuestions.has(JSON.stringify(q.question + q.options.join('')))
+    );
+    
+    // If we don't have enough fresh questions, reset history
+    if (freshQuestions.length < count) {
+      usedQuestions.clear();
+      userQuestionHistory.set(userKey, usedQuestions);
+    }
+    
+    // Take the requested number of questions
+    const selectedQuestions = freshQuestions.slice(0, parseInt(count));
+    
+    // Mark these questions as used
+    selectedQuestions.forEach(q => {
+      usedQuestions.add(JSON.stringify(q.question + q.options.join('')));
+    });
+    userQuestionHistory.set(userKey, usedQuestions);
+    
     res.json({
       examType,
-      questions,
+      questions: selectedQuestions,
       totalAvailable: questionGenerator.questionBank[examType]?.length || 0,
       difficulty,
+      freshQuestions: selectedQuestions.length,
       generated_at: new Date()
     });
   } catch (error) {
@@ -395,9 +424,24 @@ app.post('/api/questions/reset-history', (req, res) => {
   try {
     const { userId, examType } = req.body;
     
-    questionGenerator.resetUserHistory(userId, examType);
+    if (examType) {
+      // Reset specific exam type
+      const userKey = `${userId}_${examType}`;
+      userQuestionHistory.delete(userKey);
+    } else {
+      // Reset all question history for user
+      const keysToDelete = Array.from(userQuestionHistory.keys())
+        .filter(key => key.startsWith(`${userId}_`));
+      keysToDelete.forEach(key => userQuestionHistory.delete(key));
+    }
+    
+    // Also reset in question generator if method exists
+    if (questionGenerator.resetUserHistory) {
+      questionGenerator.resetUserHistory(userId, examType);
+    }
     
     res.json({
+      success: true,
       message: 'Question history reset successfully',
       userId,
       examType: examType || 'all'
@@ -1341,6 +1385,114 @@ function optimizeCosts(skillGaps, budget) {
 app.get('/api/progress/:userId', async (req, res) => {
   const user = await User.findById(req.params.userId);
   res.json(user?.progress || {});
+});
+
+// Pricing and startup application endpoints
+app.post('/api/startup-application', async (req, res) => {
+    try {
+        const { university, gradYear, startupIdea, currentStage } = req.body;
+        
+        // Validate graduation year eligibility
+        const currentYear = new Date().getFullYear();
+        if (currentYear - parseInt(gradYear) > 2) {
+            return res.status(400).json({ 
+                error: 'Not eligible - graduation must be within 2 years' 
+            });
+        }
+
+        // Store application in database
+        const application = {
+            university,
+            gradYear: parseInt(gradYear),
+            startupIdea,
+            currentStage,
+            appliedAt: new Date(),
+            status: 'pending',
+            userId: req.session?.userId || 'anonymous'
+        };
+
+        console.log('Startup application received:', application);
+        
+        res.json({ 
+            success: true, 
+            message: 'Application submitted successfully',
+            applicationId: Date.now().toString()
+        });
+    } catch (error) {
+        console.error('Startup application error:', error);
+        res.status(500).json({ error: 'Failed to process application' });
+    }
+});
+
+app.post('/api/upgrade-plan', async (req, res) => {
+    try {
+        const { plan, paymentMethod } = req.body;
+        
+        const plans = {
+            pro: { price: 29, features: ['unlimited', 'ai-questions', 'analytics'] },
+            startup: { price: 9, features: ['unlimited', 'ai-questions', 'analytics', 'mentorship'] }
+        };
+
+        if (!plans[plan]) {
+            return res.status(400).json({ error: 'Invalid plan' });
+        }
+
+        console.log(`Processing upgrade to ${plan} plan`);
+        
+        res.json({ 
+            success: true, 
+            plan,
+            price: plans[plan].price,
+            features: plans[plan].features
+        });
+        
+    } catch (error) {
+        console.error('Plan upgrade error:', error);
+        res.status(500).json({ error: 'Failed to process upgrade' });
+    }
+});
+
+app.get('/api/uk-startup-resources', (req, res) => {
+    const resources = {
+        funding: [
+            {
+                name: 'Start Up Loans',
+                description: 'Government-backed loans up to £25,000',
+                url: 'https://www.startuploans.co.uk/',
+                eligibility: 'UK residents, any age',
+                amount: '£500 - £25,000'
+            },
+            {
+                name: 'Innovate UK Smart Grants',
+                description: 'Grants for innovative R&D projects',
+                url: 'https://www.ukri.org/councils/innovate-uk/',
+                eligibility: 'UK-based innovative projects',
+                amount: '£25,000 - £2,000,000'
+            }
+        ],
+        
+        setup: [
+            {
+                step: 'Choose business structure',
+                details: 'Limited company (recommended for startups)',
+                cost: '£12',
+                timeframe: '24 hours'
+            },
+            {
+                step: 'Register with Companies House',
+                details: 'Online registration for limited companies',
+                cost: '£12',
+                timeframe: '24 hours'
+            }
+        ]
+    };
+
+    res.json(resources);
+});
+
+// Serve pricing page
+app.get('/pricing', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'pricing.html'));
 });
 
 const PORT = process.env.PORT || 3000;

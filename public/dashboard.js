@@ -90,7 +90,7 @@ class Dashboard {
                 <div class="activity-item">
                     <div class="activity-icon">🚀</div>
                     <div class="activity-content">
-                        <h4>Welcome to SkillForge!</h4>
+                        <h4>Welcome to SkillCompass!</h4>
                         <p>Take your first assessment to get started</p>
                         <span class="activity-time">Just now</span>
                     </div>

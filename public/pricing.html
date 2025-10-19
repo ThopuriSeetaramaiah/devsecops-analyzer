@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - SkillCompass</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="pricing-container">
+        <header class="pricing-header">
+            <h1>🎯 Choose Your Plan</h1>
+            <p>Accelerate your DevSecOps career with AI-powered learning</p>
+            <a href="index.html" class="back-btn">← Back to Home</a>
+        </header>
+
+        <div class="pricing-grid">
+            <!-- Free Plan -->
+            <div class="pricing-card">
+                <div class="plan-header">
+                    <h3>Free</h3>
+                    <div class="price">£0<span>/month</span></div>
+                </div>
+                <ul class="features">
+                    <li>✅ 10 questions per day</li>
+                    <li>✅ Basic analytics</li>
+                    <li>✅ Community support</li>
+                    <li>❌ AI-generated questions</li>
+                    <li>❌ Advanced analytics</li>
+                </ul>
+                <button class="btn-secondary current-plan">Current Plan</button>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="pricing-card featured">
+                <div class="plan-header">
+                    <h3>Pro</h3>
+                    <div class="price">£29<span>/month</span></div>
+                </div>
+                <ul class="features">
+                    <li>✅ Unlimited questions</li>
+                    <li>✅ AI-generated questions</li>
+                    <li>✅ Advanced analytics</li>
+                    <li>✅ Industry benchmarking</li>
+                    <li>✅ Priority support</li>
+                </ul>
+                <button class="btn-primary" onclick="upgradeToPro()">Upgrade to Pro</button>
+            </div>
+
+            <!-- UK Graduate Startup Plan -->
+            <div class="pricing-card startup-special">
+                <div class="plan-header">
+                    <div class="startup-badge">🎓 UK Graduate Special</div>
+                    <h3>Startup Accelerator</h3>
+                    <div class="price">£9<span>/month</span></div>
+                    <div class="original-price">£29/month</div>
+                </div>
+                <ul class="features">
+                    <li>✅ Everything in Pro</li>
+                    <li>✅ Startup mentorship</li>
+                    <li>✅ Investor pitch prep</li>
+                    <li>✅ Funding guidance</li>
+                    <li>✅ Priority support</li>
+                </ul>
+                <button class="btn-hero-primary" onclick="applyForStartupPlan()">Apply for Startup Plan</button>
+                <p class="eligibility">*UK graduates within 2 years of graduation</p>
+            </div>
+        </div>
+
+        <!-- Startup Application Modal -->
+        <div id="startupModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>🎓 UK Graduate Startup Application</h2>
+                <form id="startupForm">
+                    <div class="form-group">
+                        <label>University:</label>
+                        <input type="text" id="university" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Graduation Year:</label>
+                        <select id="gradYear" required>
+                            <option value="">Select year</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Startup Idea (brief description):</label>
+                        <textarea id="startupIdea" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Stage:</label>
+                        <select id="currentStage" required>
+                            <option value="">Select stage</option>
+                            <option value="idea">Just an idea</option>
+                            <option value="planning">Business planning</option>
+                            <option value="mvp">Building MVP</option>
+                            <option value="launched">Already launched</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Submit Application</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="pricing.js"></script>
+</body>
+</html>
